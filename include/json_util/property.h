@@ -13,10 +13,16 @@
 namespace json_util
 {
 
+enum class JsonOption
+{
+    NONE = 0,
+    OPTIONAL = 1
+};
+
 /// Used for storing JSON metadata
 /// \tparam Owner The owner of the variable in question
 /// \tparam T The type of variable in question
-template <class Owner, class T>
+template <class Owner, class T, JsonOption Options = JsonOption::NONE>
 class JsonProperty
 {
   public:
@@ -29,16 +35,23 @@ class JsonProperty
     char const * name;
 
     constexpr JsonProperty(T Owner::*member, char const * name) :
-      member{member},
-      name{name} {}
+      member {member},
+      name {name} {}
 };
 
 
 
 /// Convenient wrapper for template deduction
 template <class Owner, class T>
-constexpr JsonProperty<Owner, T>
+constexpr JsonProperty<Owner, T, JsonOption::NONE>
 makeProp(T Owner::*member, char const * name)
+{
+  return {member, name};
+}
+
+template <class Owner, class T>
+constexpr JsonProperty<Owner, T, JsonOption::OPTIONAL>
+makeOptionalProp(T Owner::*member, char const * name)
 {
   return {member, name};
 }
@@ -47,20 +60,23 @@ makeProp(T Owner::*member, char const * name)
 /// Convenient macro for when the member variable has the same name as the JSON
 /// property.
 #define JSON_UTIL_MAKE_PROP(owner, name) (makeProp(&owner::name, #name))
+#define JSON_UTIL_MAKE_OPTIONAL_PROP(owner, name) \
+  (makeOptionalProp(&owner::name, #name))
 
 
 
 /// Used for ensuring an arg list contains only JsonProperty objects.
-template <class Owner, class T>
+template <class Owner, class T, JsonOption Options>
 constexpr void
-verifyPropList(JsonProperty<Owner, T> const & first)
+verifyPropList(JsonProperty<Owner, T, Options> const & first)
 {
 
 }
 
-template <class Owner, class T, class ... ArgPack>
+template <class Owner, class T, JsonOption Options, class ... ArgPack>
 constexpr void
-verifyPropList(JsonProperty<Owner, T> const & first, ArgPack && ... args)
+verifyPropList(
+  JsonProperty<Owner, T, Options> const & first, ArgPack && ... args)
 {
   verifyPropList(std::forward<ArgPack>(args)...);
 }
@@ -68,9 +84,9 @@ verifyPropList(JsonProperty<Owner, T> const & first, ArgPack && ... args)
 
 
 /// Convenient function for creating correct JsonProperty tuples.
-template <class Owner, class T, class ... ArgPack>
-constexpr std::tuple<JsonProperty<Owner, T>, ArgPack...>
-propList(JsonProperty<Owner, T> && first, ArgPack && ... args)
+template <class Owner, class T, JsonOption Options, class ... ArgPack>
+constexpr std::tuple<JsonProperty<Owner, T, Options>, ArgPack...>
+propList(JsonProperty<Owner, T, Options> && first, ArgPack && ... args)
 {
   verifyPropList(first, std::forward<ArgPack>(args)...);
   return {first, std::forward<ArgPack>(args)...};
@@ -86,7 +102,24 @@ void deserialize2(
 
 
 
+#define __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, getFunc)\
+  (obj).*((prop).member) = (json)[(prop).name].getFunc();
+
+#define __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, getFunc)\
+  {\
+  auto it = (json).FindMember((prop).name);\
+  if (it != (json).MemberEnd())\
+    (obj).*((prop).member) = it->value.getFunc();\
+  }
+
+
 /// Deserialization
+template <class GenericJson, class Owner, class T, JsonOption options>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, T, options> const & prop);
+
 // object
 template <class GenericJson, class Owner, class T>
 void deserialize(
@@ -97,6 +130,19 @@ void deserialize(
   deserialize2(json[prop.name].GetObject(), obj.*(prop.member));
 }
 
+template <class GenericJson, class Owner, class T>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, T, JsonOption::OPTIONAL> const & prop)
+{
+  auto it = json.FindMember(prop.name);
+  if (it != json.MemberEnd())
+  {
+    deserialize2(it->value.GetObject(), obj.*(prop.member));
+  }
+}
+
 
 // bool
 template <class GenericJson, class Owner>
@@ -105,7 +151,18 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, bool> const & prop)
 {
-  obj.*(prop.member) = json[prop.name].GetBool();
+  //obj.*(prop.member) = json[prop.name].GetBool();
+  __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, GetBool);
+}
+
+template <class GenericJson, class Owner>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, bool, JsonOption::OPTIONAL> const & prop)
+{
+  //obj.*(prop.member) = json[prop.name].GetBool();
+  __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, GetBool);
 }
 
 
@@ -116,7 +173,16 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, int> const & prop)
 {
-  obj.*(prop.member) = json[prop.name].GetInt();
+  __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, GetInt);
+}
+
+template <class GenericJson, class Owner>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, int, JsonOption::OPTIONAL> const & prop)
+{
+  __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, GetInt);
 }
 
 
@@ -127,7 +193,16 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, unsigned> const & prop)
 {
-  obj.*(prop.member) = json[prop.name].GetUint();
+  __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, GetUint);
+}
+
+template <class GenericJson, class Owner>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, unsigned, JsonOption::OPTIONAL> const & prop)
+{
+  __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, GetUint);
 }
 
 
@@ -138,7 +213,16 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, int64_t> const & prop)
 {
-  obj.*(prop.member) = json[prop.name].GetInt64();
+  __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, GetInt64);
+}
+
+template <class GenericJson, class Owner>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, int64_t, JsonOption::OPTIONAL> const & prop)
+{
+  __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, GetInt64);
 }
 
 
@@ -149,7 +233,16 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, uint64_t> const & prop)
 {
-  obj.*(prop.member) = json[prop.name].GetUint64();
+  __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, GetUint64);
+}
+
+template <class GenericJson, class Owner>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, uint64_t, JsonOption::OPTIONAL> const & prop)
+{
+  __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, GetUint64);
 }
 
 
@@ -160,7 +253,16 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, float> const & prop)
 {
-  obj.*(prop.member) = json[prop.name].GetFloat();
+  __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, GetFloat);
+}
+
+template <class GenericJson, class Owner>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, float, JsonOption::OPTIONAL> const & prop)
+{
+  __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, GetFloat);
 }
 
 
@@ -171,7 +273,16 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, double> const & prop)
 {
-  obj.*(prop.member) = json[prop.name].GetDouble();
+  __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, GetDouble);
+}
+
+template <class GenericJson, class Owner>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, double, JsonOption::OPTIONAL> const & prop)
+{
+  __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, GetDouble);
 }
 
 
@@ -182,7 +293,16 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, std::string> const & prop)
 {
-  obj.*(prop.member) = json[prop.name].GetString();
+  __JSON_UTIL_DESERIALIZE_GENERIC(json, obj, prop, GetString);
+}
+
+template <class GenericJson, class Owner>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonProperty<Owner, std::string, JsonOption::OPTIONAL> const & prop)
+{
+  __JSON_UTIL_DESERIALIZE_GENERIC_OPTIONAL(json, obj, prop, GetString);
 }
 
 

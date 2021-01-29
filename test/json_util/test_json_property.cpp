@@ -8,8 +8,8 @@ using namespace rapidjson;
 class Obj
 {
   public:
-    int objIntTest;
-    float objFloatTest;
+    int objIntTest {0};
+    float objFloatTest {0};
     std::string objStringTest;
 
     static constexpr auto jsonProps = propList(
@@ -70,6 +70,53 @@ class Owner
     }
 };
 
+
+
+class OwnerAllOptional
+{
+  public:
+    bool boolTestT {true};
+    bool boolTestF {false};
+    int intTest {-1};
+    unsigned uintTest {1};
+    int64_t int64Test {-2};
+    uint64_t uint64Test {2};
+    float floatTest {1.5};
+    double doubleTest {10.25};
+    std::string stringTest {"default"};
+    Obj objTest;
+
+    static constexpr auto jsonProps = propList(
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, boolTestT),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, boolTestF),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, intTest),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, uintTest),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, int64Test),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, uint64Test),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, floatTest),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, doubleTest),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, stringTest),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, objTest)
+    );
+
+    bool operator==(OwnerAllOptional const & other) const
+    {
+      return
+        boolTestT == other.boolTestT &&
+          boolTestF == other.boolTestF &&
+          intTest == other.intTest &&
+          uintTest == other.uintTest &&
+          int64Test == other.int64Test &&
+          uint64Test == other.uint64Test &&
+          floatTest == other.floatTest &&
+          doubleTest == other.doubleTest &&
+          stringTest == other.stringTest &&
+          objTest == other.objTest;
+    }
+};
+
+
+
 Document fullDoc()
 {
   const char* json = R"({
@@ -95,7 +142,21 @@ Document fullDoc()
   return d;
 }
 
-TEST(TestClGlitcherCli, DeserializeAll)
+
+
+Document emptyDoc()
+{
+  const char * json = "{}";
+
+  Document d;
+  d.Parse(json);
+
+  return d;
+}
+
+
+
+TEST(TestClGlitcherCli, DeserializeAllNoOptional)
 {
   auto d = fullDoc();
 
@@ -115,6 +176,43 @@ TEST(TestClGlitcherCli, DeserializeAll)
 
   ASSERT_EQ(o, expected);
 }
+
+
+
+TEST(TestClGlitcherCli, DeserializeAllOptional)
+{
+  auto d = fullDoc();
+
+  OwnerAllOptional o;
+  deserialize(d, o);
+
+  OwnerAllOptional expected {
+    true, false,
+    -200, 200,
+    -300, 300,
+    10.5, 100.25,
+    "test string",
+    {
+      100, 10.5, "test"
+    }
+  };
+
+  ASSERT_EQ(o, expected);
+}
+
+
+TEST(TestClGlitcherCli, DeserializeAllOptionalEmptyJson)
+{
+  auto d = emptyDoc();
+
+  OwnerAllOptional o;
+  deserialize(d, o);
+
+  OwnerAllOptional expected {};
+
+  ASSERT_EQ(o, expected);
+}
+
 
 struct Child
 {
