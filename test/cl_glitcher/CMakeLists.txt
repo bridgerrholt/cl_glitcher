@@ -1,0 +1,8 @@
+add_subdirectory(cli)
+
+
+get_target_property(test_cl_glitcher_cli_sources test_cl_glitcher_cli SOURCES)
+get_target_property(test_cl_glitcher_cli_libs test_cl_glitcher_cli LINK_LIBRARIES)
+
+add_executable(test_cl_glitcher ${test_cl_glitcher_cli_sources})
+target_link_libraries(test_cl_glitcher PUBLIC ${test_cl_glitcher_cli_libs})
