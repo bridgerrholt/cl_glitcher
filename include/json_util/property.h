@@ -59,9 +59,10 @@ makeOptionalProp(T Owner::*member, char const * name)
 
 /// Convenient macro for when the member variable has the same name as the JSON
 /// property.
-#define JSON_UTIL_MAKE_PROP(owner, name) (makeProp(&owner::name, #name))
+#define JSON_UTIL_MAKE_PROP(owner, name) \
+  (json_util::makeProp(&owner::name, #name))
 #define JSON_UTIL_MAKE_OPTIONAL_PROP(owner, name) \
-  (makeOptionalProp(&owner::name, #name))
+  (json_util::makeOptionalProp(&owner::name, #name))
 
 
 
