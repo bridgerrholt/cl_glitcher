@@ -2,8 +2,8 @@
 // Created by bridg on 1/27/2021.
 //
 
-#ifndef CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_LOAD_MODS_H
-#define CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_LOAD_MODS_H
+#ifndef CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_LOAD_DYNAMIC_MODS_H
+#define CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_LOAD_DYNAMIC_MODS_H
 
 #include <vector>
 
@@ -30,8 +30,8 @@ namespace clglitch
 /// \throws std::exception when the file can't be loaded, a library can't be
 ///         loaded, a library's ModData func can't be loaded and executed,
 ///         or the file doesn't contain sets of 3 lines.
-std::vector<ModData> loadMods(char const * configFileName);
+std::vector<ModData> loadDynamicMods(char const * configFileName);
 
 }
 
-#endif //CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_LOAD_MODS_H
+#endif //CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_LOAD_DYNAMIC_MODS_H

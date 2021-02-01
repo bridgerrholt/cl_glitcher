@@ -1,16 +1,41 @@
-#include <mod_sys/load_mods.h>
+#include <mod_sys/load_dynamic_mods.h>
 
 #include <fstream>
 #include <string>
 #include <algorithm>
 
 #include <dynalo/dynalo.hpp>
+#include <load_json_file.h>
+#include <property.h>
 
 namespace
 {
 
+class ModDataLoaderInfo
+{
+  public:
+    std::string libDir;
+    std::string libName;
+    std::string modDataFuncName {"getModData"};
+
+    static constexpr auto jsonProps = propList(
+      JSON_UTIL_MAKE_PROP(ModDataLoaderInfo, libDir),
+      JSON_UTIL_MAKE_PROP(ModDataLoaderInfo, libName),
+      JSON_UTIL_MAKE_OPTIONAL_PROP(ModDataLoaderInfo, modDataFuncName)
+    );
+};
+
+
+class ModDataLoaderInfoFullName
+{
+  public:
+    std::string fullLibName;
+    std::string modDataFuncName {"getModData"};
+};
+
+
 // trim from start (in place)
-std::string & ltrim(std::string & s) {
+/*std::string & ltrim(std::string & s) {
   s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
     return !std::isspace(ch);
   }));
@@ -23,14 +48,52 @@ std::string & rtrim(std::string & s) {
     return !std::isspace(ch);
   }).base(), s.end());
   return s;
-}
+}*/
 
 }
 
 namespace clglitch
 {
 
-std::vector<ModData> loadMods(char const * configFileName)
+ModData loadDynamicMod(rapidjson::Document::ValueType const & json)
+{
+  std::string fullFileName;
+
+  auto it = json.FindMember("fullLibName");
+  if (it != json.MemberEnd())
+  {
+    ModDataLoaderInfoFullName info;
+    info.fullLibName = it->value.GetString();
+    info.modDataFuncName = json["modDataFuncName"].GetString();
+  }
+  else
+  {
+    ModDataLoaderInfo info;
+    json_util::deserialize(json, info);
+  }
+}
+
+std::vector<ModData> loadDynamicMods(char const * configFileName)
+{
+  rapidjson::Document doc {json_util::loadJsonFile(configFileName)};
+
+  std::ifstream file {configFileName};
+
+  std::string line;
+  enum LineType { LIB_DIR, LIB_NAME, MOD_DATA_FUNC_NAME };
+  LineType lineType {LIB_DIR};
+
+  std::string libDir;
+  std::string libName;
+  std::string modDataFuncName;
+
+  std::vector<ModData> modDataList;
+
+  return modDataList;
+}
+
+
+/*std::vector<ModData> loadDynamicMods(char const * configFileName)
 {
   std::ifstream file {configFileName};
 
@@ -91,6 +154,6 @@ std::vector<ModData> loadMods(char const * configFileName)
   }
 
   return modDataList;
-}
+}*/
 
 }
