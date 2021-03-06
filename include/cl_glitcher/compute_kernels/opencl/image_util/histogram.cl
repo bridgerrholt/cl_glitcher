@@ -14,7 +14,6 @@ void kernel histogram(
   stop  = ratio * (ID + 1);
 
   for (int i = start; i < stop; i++) {
-    unsigned int t = img[i];
-    atomic_add(histOut + t, 1);
+    atomic_add(&histOut[img[i]], 1);
   }
 }

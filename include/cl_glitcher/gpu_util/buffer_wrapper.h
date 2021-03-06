@@ -16,8 +16,8 @@ class BufferWrapper
     BufferWrapper(
       GpuHandle const & gpuHandle,
       cl_mem_flags flags,
-      std::size_t arrSize) :
-      buffer { gpuHandle.context, flags, arrSize }
+      std::size_t arrBytes) :
+      buffer { gpuHandle.context, flags, arrBytes }
     {
 
     }
@@ -29,6 +29,25 @@ class BufferWrapper
       Arr const & arr)
     {
       return { gpuHandle, flags, calcSize(arr) };
+    }
+
+    template <class Value>
+    static BufferWrapper fromArr(
+      GpuHandle const & gpuHandle,
+      cl_mem_flags flags,
+      Value const * arr,
+      std::size_t arrSize)
+    {
+      return { gpuHandle, flags, calcSize(arr, arrSize) };
+    }
+
+    template <class Value>
+    static BufferWrapper fromValue(
+      GpuHandle const & gpuHandle,
+      cl_mem_flags flags,
+      Value const & value)
+    {
+      return fromArr(gpuHandle, flags, &value, 1);
     }
 
     template <class Arr>
@@ -56,6 +75,33 @@ class BufferWrapper
       return bw;
     }
 
+    template <class Value>
+    static BufferWrapper writeBufferValue(
+      cl::CommandQueue & queue,
+      GpuHandle const & gpuHandle,
+      cl_mem_flags flags,
+      Value const & value)
+    {
+      auto s {calcSize(&value, 1)};
+      BufferWrapper bw { gpuHandle, flags, s };
+      bw.enqueueWriteVoid(queue, &value, s);
+      return bw;
+    }
+
+    template <class Value>
+    static BufferWrapper writeBuffer(
+      cl::CommandQueue & queue,
+      GpuHandle const & gpuHandle,
+      cl_mem_flags flags,
+      Value const * arr,
+      std::size_t arrSize)
+    {
+      auto s { calcSize(arr, arrSize) };
+      BufferWrapper bw { gpuHandle, flags, s };
+      bw.enqueueWriteVoid(queue, arr, s);
+      return bw;
+    }
+
     template <class Arr>
     void enqueueWrite(cl::CommandQueue & queue, Arr const & arr)
     {
@@ -66,9 +112,11 @@ class BufferWrapper
     template <class Type>
     void enqueueWrite(cl::CommandQueue & queue, Type const * arr, std::size_t arrSize)
     {
-      std::size_t s {sizeof(Type) * arrSize};
-      queue.enqueueWriteBuffer(buffer, CL_TRUE, 0, s, arr);
+      enqueueWriteVoid(queue, arr, calcSize(arr, arrSize));
     }
+
+    void enqueueWriteVoid(
+      cl::CommandQueue & queue, void const * arr, std::size_t bytes);
 
     template <class Arr>
     void enqueueRead(cl::CommandQueue & queue, Arr & arr)
@@ -93,6 +141,12 @@ class BufferWrapper
     static std::size_t calcSize(Arr const & arr)
     {
       return sizeof(typename Arr::value_type) * arr.size();
+    }
+
+    template <class Value>
+    static std::size_t calcSize(Value const * arr, std::size_t arrSize)
+    {
+      return sizeof(Value) * arrSize;
     }
 
     cl::Buffer buffer;

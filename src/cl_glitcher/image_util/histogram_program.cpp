@@ -13,58 +13,15 @@
 
 namespace clglitch::image_util {
 
-namespace {
-
-using namespace gpu_util;
-
-std::array<unsigned int, 256> runHistogram(
-  GpuHandle const & gpuHandle,
-  cl::Program const & program,
-  unsigned char const * imgArr,
-  int imgSize)
-{
-  // apparently OpenCL only likes arrays ...
-  // N holds the number of elements in the vectors we want to add
-  int N[1] = {imgSize};
-
-  // create buffers on device (allocate space on GPU)
-  cl::Buffer buffer_A(gpuHandle.context, CL_MEM_READ_ONLY, sizeof(char) * imgSize);
-  cl::Buffer buffer_C(gpuHandle.context, CL_MEM_READ_WRITE, sizeof(int) * 256);
-  cl::Buffer buffer_N(gpuHandle.context, CL_MEM_READ_ONLY,  sizeof(int));
-  // create a queue (a queue of commands that the GPU will execute)
-  cl::CommandQueue queue(gpuHandle.context, gpuHandle.device);
-
-  // push write commands to queue
-  queue.enqueueWriteBuffer(buffer_A, CL_TRUE, 0, sizeof(char)*imgSize, imgArr);
-  queue.enqueueWriteBuffer(buffer_N, CL_TRUE, 0, sizeof(int),   N);
-
-  // RUN ZE KERNEL
-  //cl::KernelFunctor simple_add(cl::Kernel(program, "simple_add"), queue, cl::NullRange, cl::NDRange(10), cl::NullRange);
-  //simple_add(buffer_A, buffer_B, buffer_C, buffer_N);
-
-  cl::Kernel simple_add(program, "histogram");
-  simple_add.setArg(0, buffer_A);
-  simple_add.setArg(1, buffer_N);
-  simple_add.setArg(2, buffer_C);
-  queue.enqueueNDRangeKernel(simple_add,cl::NullRange,cl::NDRange(16),cl::NullRange);
-
-  std::array<unsigned int, 256> C {};
-  // read result from GPU to here
-  queue.enqueueReadBuffer(buffer_C, CL_TRUE, 0, sizeof(int)*256, C.data());
-  queue.finish();
-
-  return C;
-}
-
-}
-
-
 HistogramProgram::HistogramProgram(gpu_util::GpuHandle const & gpuHandle) :
-  program {gpu_util::buildProgram(
-    gpuHandle, {{
-      histogram_program::histogramStr.c_str(),
-      histogram_program::histogramStr.size()
-    }})} {}
+  program {
+    gpu_util::buildProgram(
+      gpuHandle, {{
+        histogram_program::histogramStr.c_str(),
+        histogram_program::histogramStr.size()
+      }}
+    )
+  } {}
 
 
 
@@ -75,15 +32,56 @@ std::array<unsigned int, 256> HistogramProgram::execute(
 {
   using namespace gpu_util;
 
-  GpuHandle data {init()};
+  std::array<unsigned int, 256> res {};
 
-  cl::Program p {buildProgram(data, {{histogram_program::histogramStr.c_str(), histogram_program::histogramStr.size()}})};
+  cl::CommandQueue queue(gpuHandle.context, gpuHandle.device);
 
-  constexpr int n = 100;
+  /*auto bwA {
+    BufferWrapper::fromArr(gpuHandle, CL_MEM_READ_ONLY, img, imgSize)
+  };*/
+  auto bwA {
+    BufferWrapper::writeBuffer(
+      queue, gpuHandle, CL_MEM_READ_ONLY, img, imgSize
+    )
+  };
+  /*auto bwN {
+    BufferWrapper::fromValue(gpuHandle, CL_MEM_READ_WRITE, imgSize)
+  };*/
+  auto bwN {
+    BufferWrapper::writeBufferValue(
+      queue, gpuHandle, CL_MEM_READ_ONLY, imgSize
+    )
+  };
+  auto bwC {
+    BufferWrapper::fromArr(gpuHandle, CL_MEM_READ_WRITE, res)
+  };
 
-  auto C {runHistogram(data, p, img, imgSize)};
+  // create buffers on device (allocate space on GPU)
+  //cl::Buffer buffer_A(gpuHandle.context, CL_MEM_READ_ONLY, sizeof(char) * imgSize);
+  //cl::Buffer buffer_C(gpuHandle.context, CL_MEM_READ_WRITE, sizeof(int) * 256);
+  //cl::Buffer buffer_N(gpuHandle.context, CL_MEM_READ_ONLY,  sizeof(int));
+  // create a queue (a queue of commands that the GPU will execute)
 
-  return C;
+  // push write commands to queue
+  //queue.enqueueWriteBuffer(bwA.getBuffer(), CL_TRUE, 0, sizeof(char)*imgSize, img);
+  //queue.enqueueWriteBuffer(bwN.getBuffer(), CL_TRUE, 0, sizeof(int), &imgSize);
+
+  // RUN ZE KERNEL
+  //cl::KernelFunctor simple_add(cl::Kernel(program, "simple_add"), queue, cl::NullRange, cl::NDRange(10), cl::NullRange);
+  //simple_add(buffer_A, buffer_B, buffer_C, buffer_N);
+
+  cl::Kernel simple_add(program, "histogram");
+  simple_add.setArg(0, bwA.getBuffer());
+  simple_add.setArg(1, bwN.getBuffer());
+  simple_add.setArg(2, bwC.getBuffer());
+  queue.enqueueNDRangeKernel(simple_add,cl::NullRange,cl::NDRange(16),cl::NullRange);
+
+  // read result from GPU to here
+  //queue.enqueueReadBuffer(bwC.getBuffer(), CL_TRUE, 0, sizeof(int)*256, C.data());
+  bwC.enqueueRead(queue, res);
+  queue.finish();
+
+  return res;
 }
 
 
