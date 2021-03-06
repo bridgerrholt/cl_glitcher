@@ -14,30 +14,32 @@ constexpr char const * directory {CL_GLITCHER_TEST_DIRECTORY_GPU_UTIL};
 std::string const vectorAdditionFile {std::string{directory} + "/test_cl_glitcher_vector_addition.cl"};
 
 template <int n>
-std::array<int, n> runVectorAddition(GpuHandle const & gpuHandle, cl::Program const & program)
+std::array<unsigned int, n> runVectorAddition(GpuHandle const & gpuHandle, cl::Program const & program)
 {
   // apparently OpenCL only likes arrays ...
   // N holds the number of elements in the vectors we want to add
   constexpr int N[1] = {n};
 
   // create buffers on device (allocate space on GPU)
-  cl::Buffer buffer_A(gpuHandle.context, CL_MEM_READ_WRITE, sizeof(int) * n);
-  cl::Buffer buffer_B(gpuHandle.context, CL_MEM_READ_WRITE, sizeof(int) * n);
+  cl::Buffer buffer_A(gpuHandle.context, CL_MEM_READ_ONLY, sizeof(int) * n);
+  cl::Buffer buffer_B(gpuHandle.context, CL_MEM_READ_ONLY, sizeof(int) * n);
   cl::Buffer buffer_C(gpuHandle.context, CL_MEM_READ_WRITE, sizeof(int) * n);
   cl::Buffer buffer_N(gpuHandle.context, CL_MEM_READ_ONLY,  sizeof(int));
 
   // create things on here (CPU)
-  int A[n], B[n];
-  for (int i = 0; i < n; i++) {
-    A[i] = i;
-    B[i] = n - i - 1;
+  std::array<unsigned int, n> A_, B_;
+  for (unsigned int i = 0; i < n; i++) {
+    A_[i] = i;
+    B_[i] = n - i - 1;
   }
+  std::array<unsigned int, n> const A(A_);
+  std::array<unsigned int, n> const B(B_);
   // create a queue (a queue of commands that the GPU will execute)
   cl::CommandQueue queue(gpuHandle.context, gpuHandle.device);
 
   // push write commands to queue
-  queue.enqueueWriteBuffer(buffer_A, CL_TRUE, 0, sizeof(int)*n, A);
-  queue.enqueueWriteBuffer(buffer_B, CL_TRUE, 0, sizeof(int)*n, B);
+  queue.enqueueWriteBuffer(buffer_A, CL_TRUE, 0, sizeof(int)*n, A.data());
+  queue.enqueueWriteBuffer(buffer_B, CL_TRUE, 0, sizeof(int)*n, B.data());
   queue.enqueueWriteBuffer(buffer_N, CL_TRUE, 0, sizeof(int),   N);
 
   // RUN ZE KERNEL
@@ -50,11 +52,11 @@ std::array<int, n> runVectorAddition(GpuHandle const & gpuHandle, cl::Program co
   simple_add.setArg(2, buffer_C);
   simple_add.setArg(3, buffer_N);
   queue.enqueueNDRangeKernel(simple_add,cl::NullRange,cl::NDRange(10),cl::NullRange);
-  queue.finish();
 
-  std::array<int, n> C {};
+  std::array<unsigned int, n> C {};
   // read result from GPU to here
   queue.enqueueReadBuffer(buffer_C, CL_TRUE, 0, sizeof(int)*n, C.data());
+  queue.finish();
 
   return C;
 }
@@ -97,9 +99,9 @@ TEST(TestClGlitcherGpuUtil, VectorAdditionFromSources)
 
   constexpr int n = 100;
 
-  std::array<int, n> C {runVectorAddition<n>(data, program)};
+  std::array<unsigned, n> C {runVectorAddition<n>(data, program)};
 
-  std::array<int, n> cDesired {};
+  std::array<unsigned, n> cDesired {};
   std::fill(cDesired.begin(), cDesired.end(), n - 1);
 
   ASSERT_EQ(C, cDesired);
@@ -115,9 +117,9 @@ TEST(TestClGlitcherGpuUtil, VectorAdditionFromFile)
 
   constexpr int n = 100;
 
-  std::array<int, n> C {runVectorAddition<n>(data, program)};
+  auto C {runVectorAddition<n>(data, program)};
 
-  std::array<int, n> cDesired {};
+  std::array<unsigned int, n> cDesired {};
   std::fill(cDesired.begin(), cDesired.end(), n - 1);
 
   ASSERT_EQ(C, cDesired);
@@ -133,9 +135,9 @@ TEST(TestClGlitcherGpuUtil, VectorAdditionFromHeader)
 
   constexpr int n = 100;
 
-  std::array<int, n> C {runVectorAddition<n>(data, program)};
+  auto C {runVectorAddition<n>(data, program)};
 
-  std::array<int, n> cDesired {};
+  std::array<unsigned int, n> cDesired {};
   std::fill(cDesired.begin(), cDesired.end(), n - 1);
 
   ASSERT_EQ(C, cDesired);

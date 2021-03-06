@@ -13,6 +13,7 @@ void stringifyToHeaderStreamed(
   std::string const & varNamespace, std::string const & varName,
   IStream & iStream, OStream & oStream)
 {
+  oStream << "#include <string>\n";
   oStream << "namespace " << varNamespace << "{\n";
   oStream << "std::string const " << varName << " {\n";
 
