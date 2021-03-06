@@ -10,24 +10,34 @@
 namespace clglitch::gpu_util {
 
 template <std::size_t index, class T>
-void setArgsI(cl::Kernel kernel, T & arg)
+void setArgsI(cl::Kernel kernel, T const & bwI)
 {
-  kernel.setArg(index, arg.getBuffer());
+  kernel.setArg(index, bwI.getBuffer());
 }
 
 
 
 template <std::size_t index, class T, class ... ArgPack>
-void setArgsI(cl::Kernel kernel, T & arg, ArgPack && ... args)
+void setArgsI(cl::Kernel kernel, T const & bwI, ArgPack && ... args)
 {
-  kernel.setArg(index, arg.getBuffer());
+  setArgsI<index>(kernel, bwI);
   setArgsI<index + 1>(kernel, std::forward<ArgPack>(args)...);
 }
 
+
+
 template <class T, class ... ArgPack>
-void setArgs(cl::Kernel kernel, T & arg, ArgPack && ... args)
+void setArgs(cl::Kernel kernel, T const & bw)
 {
-  kernel.setArg(0, arg.getBuffer());
+  kernel.setArg(0, bw.getBuffer());
+}
+
+
+
+template <class T, class ... ArgPack>
+void setArgs(cl::Kernel kernel, T const & bw0, ArgPack && ... args)
+{
+  setArgs(kernel, bw0);
   setArgsI<1>(kernel, std::forward<ArgPack>(args)...);
 }
 

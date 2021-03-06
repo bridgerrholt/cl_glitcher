@@ -8,21 +8,43 @@
 #include <array>
 
 #include <gpu_util/gpu_handle.h>
+#include <gpu_util/buffer_wrapper.h>
 
 namespace clglitch::image_util {
 
 class HistogramProgram
 {
   public:
+    using ResultArr = std::array<unsigned int, 256>;
+
     explicit HistogramProgram(gpu_util::GpuHandle const & gpuHandle);
 
-    std::array<unsigned int, 256> execute(
+    ResultArr execute(
       gpu_util::GpuHandle const & gpuHandle,
       unsigned char const * img,
       int imgSize);
 
+    gpu_util::BufferWrapper execute(
+      cl::CommandQueue & queue,
+      gpu_util::GpuHandle const & gpuHandle,
+      unsigned char const * img,
+      int imgSize);
+
+    void execute(
+      cl::CommandQueue & queue,
+      gpu_util::GpuHandle const & gpuHandle,
+      unsigned char const * img,
+      int imgSize,
+      gpu_util::BufferWrapper & resBuffer);
+
   private:
     cl::Program program;
+
+    static constexpr std::size_t resultBytes()
+    {
+      return
+        std::tuple_size<ResultArr>::value * sizeof(ResultArr::value_type);
+    }
 };
 
 }

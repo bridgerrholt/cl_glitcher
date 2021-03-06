@@ -105,8 +105,7 @@ class BufferWrapper
     template <class Arr>
     void enqueueWrite(cl::CommandQueue & queue, Arr const & arr)
     {
-      std::size_t s {calcSize(arr)};
-      queue.enqueueWriteBuffer(buffer, CL_TRUE, 0, s, arr.data());
+      enqueueWrite(queue, arr.data(), arr.size());
     }
 
     template <class Type>
@@ -121,15 +120,17 @@ class BufferWrapper
     template <class Arr>
     void enqueueRead(cl::CommandQueue & queue, Arr & arr)
     {
-      std::size_t s {calcSize(arr)};
-      queue.enqueueReadBuffer(buffer, CL_TRUE, 0, s, arr.data());
+      enqueueRead(queue, arr.data(), arr.size());
     }
 
     template <class Type>
     void enqueueRead(cl::CommandQueue & queue, Type * arr, std::size_t arrSize)
     {
-      queue.enqueueReadBuffer(buffer, CL_TRUE, 0, sizeof(Type) * arrSize, arr);
+      enqueueReadVoid(queue, arr, calcSize(arr, arrSize));
     }
+
+    void enqueueReadVoid(
+      cl::CommandQueue & queue, void * arr, std::size_t bytes);
 
     cl::Buffer const & getBuffer() const;
     cl::Buffer & getBuffer();

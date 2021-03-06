@@ -25,59 +25,37 @@ HistogramProgram::HistogramProgram(gpu_util::GpuHandle const & gpuHandle) :
 
 
 
-std::array<unsigned int, 256> HistogramProgram::execute(
+HistogramProgram::ResultArr HistogramProgram::execute(
   gpu_util::GpuHandle const & gpuHandle,
   unsigned char const * img,
   int imgSize)
 {
   using namespace gpu_util;
 
-  std::array<unsigned int, 256> res {};
+  ResultArr res {};
 
   cl::CommandQueue queue(gpuHandle.context, gpuHandle.device);
 
   /*auto bwA {
-    BufferWrapper::fromArr(gpuHandle, CL_MEM_READ_ONLY, img, imgSize)
-  };*/
-  auto bwA {
     BufferWrapper::writeBuffer(
       queue, gpuHandle, CL_MEM_READ_ONLY, img, imgSize
     )
   };
-  /*auto bwN {
-    BufferWrapper::fromValue(gpuHandle, CL_MEM_READ_WRITE, imgSize)
-  };*/
+
   auto bwN {
     BufferWrapper::writeBufferValue(
       queue, gpuHandle, CL_MEM_READ_ONLY, imgSize
     )
-  };
-  auto bwC {
-    BufferWrapper::fromArr(gpuHandle, CL_MEM_READ_WRITE, res)
-  };
-
-  // create buffers on device (allocate space on GPU)
-  //cl::Buffer buffer_A(gpuHandle.context, CL_MEM_READ_ONLY, sizeof(char) * imgSize);
-  //cl::Buffer buffer_C(gpuHandle.context, CL_MEM_READ_WRITE, sizeof(int) * 256);
-  //cl::Buffer buffer_N(gpuHandle.context, CL_MEM_READ_ONLY,  sizeof(int));
-  // create a queue (a queue of commands that the GPU will execute)
-
-  // push write commands to queue
-  //queue.enqueueWriteBuffer(bwA.getBuffer(), CL_TRUE, 0, sizeof(char)*imgSize, img);
-  //queue.enqueueWriteBuffer(bwN.getBuffer(), CL_TRUE, 0, sizeof(int), &imgSize);
+  };*/
 
   // RUN ZE KERNEL
-  //cl::KernelFunctor simple_add(cl::Kernel(program, "simple_add"), queue, cl::NullRange, cl::NDRange(10), cl::NullRange);
-  //simple_add(buffer_A, buffer_B, buffer_C, buffer_N);
+  /*cl::Kernel histogram(program, "histogram");
+  setArgs(histogram, bwA, bwN, bwC);
+  queue.enqueueNDRangeKernel(histogram,cl::NullRange,cl::NDRange(16),cl::NullRange);*/
 
-  cl::Kernel simple_add(program, "histogram");
-  simple_add.setArg(0, bwA.getBuffer());
-  simple_add.setArg(1, bwN.getBuffer());
-  simple_add.setArg(2, bwC.getBuffer());
-  queue.enqueueNDRangeKernel(simple_add,cl::NullRange,cl::NDRange(16),cl::NullRange);
+  auto bwC {execute(queue, gpuHandle, img, imgSize)};
 
   // read result from GPU to here
-  //queue.enqueueReadBuffer(bwC.getBuffer(), CL_TRUE, 0, sizeof(int)*256, C.data());
   bwC.enqueueRead(queue, res);
   queue.finish();
 
@@ -86,51 +64,51 @@ std::array<unsigned int, 256> HistogramProgram::execute(
 
 
 
-/*std::array<unsigned int, 256> HistogramProgram::execute(
+gpu_util::BufferWrapper HistogramProgram::execute(
+  cl::CommandQueue & queue,
   gpu_util::GpuHandle const & gpuHandle,
-  unsigned int const * img,
+  unsigned char const * img,
   int imgSize)
 {
   using namespace gpu_util;
 
-  std::array<int, 1> n {imgSize};
-
-  std::array<unsigned int, 256> histOut {};
-
-  // create a queue (a queue of commands that the GPU will execute)
-  cl::CommandQueue queue(gpuHandle.context, gpuHandle.device);
-
-  // create buffers on device (allocate space on GPU)
-  auto bufferImg {
-    BufferWrapper::writeBuffer(
-      queue, gpuHandle, CL_MEM_READ_ONLY, img, imgSize
-      )
+  BufferWrapper bwRes {
+    gpuHandle, CL_MEM_READ_WRITE, resultBytes()
   };
 
-  auto bufferN {
+  execute(queue, gpuHandle, img, imgSize, bwRes);
+
+  return bwRes;
+}
+
+
+
+void HistogramProgram::execute(
+  cl::CommandQueue & queue,
+  gpu_util::GpuHandle const & gpuHandle,
+  unsigned char const * img,
+  int imgSize,
+  gpu_util::BufferWrapper & resBuffer)
+{
+  using namespace gpu_util;
+
+  auto bwA {
     BufferWrapper::writeBuffer(
-      queue, gpuHandle, CL_MEM_READ_ONLY, n
+      queue, gpuHandle, CL_MEM_READ_ONLY, img, imgSize
     )
   };
 
-  auto bufferHistOut {
-    BufferWrapper::fromArr(gpuHandle, CL_MEM_READ_WRITE, histOut)
+  auto bwN {
+    BufferWrapper::writeBufferValue(
+      queue, gpuHandle, CL_MEM_READ_ONLY, imgSize
+    )
   };
 
-  // RUN ZE KERNEL
-  //cl::KernelFunctor simple_add(cl::Kernel(program, "simple_add"), queue, cl::NullRange, cl::NDRange(10), cl::NullRange);
-  //simple_add(buffer_A, buffer_B, buffer_C, buffer_N);
-
-  cl::Kernel kernel(program, "histogram");
-  setArgs(kernel, bufferImg, bufferN, bufferHistOut);
+  cl::Kernel histogram(program, "histogram");
+  setArgs(histogram, bwA, bwN, resBuffer);
   queue.enqueueNDRangeKernel(
-    kernel, cl::NullRange, cl::NDRange(8), cl::NullRange);
-
-  bufferHistOut.enqueueRead(queue, histOut);
-
-  queue.finish();
-  return histOut;
-}*/
+    histogram, cl::NullRange, cl::NDRange(16), cl::NullRange);
+}
 
 
 }

@@ -26,4 +26,11 @@ void BufferWrapper::enqueueWriteVoid(
   queue.enqueueWriteBuffer(buffer, CL_TRUE, 0, bytes, arr);
 }
 
+
+void BufferWrapper::enqueueReadVoid(
+  cl::CommandQueue & queue, void * arr, std::size_t bytes)
+{
+  queue.enqueueReadBuffer(buffer, CL_TRUE, 0, bytes, arr);
+}
+
 }
