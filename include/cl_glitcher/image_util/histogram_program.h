@@ -22,20 +22,20 @@ class HistogramProgram
     ResultArr execute(
       gpu_util::GpuHandle const & gpuHandle,
       unsigned char const * img,
-      int imgSize);
+      int imgSize) const;
 
     gpu_util::BufferWrapper execute(
       cl::CommandQueue & queue,
       gpu_util::GpuHandle const & gpuHandle,
       unsigned char const * img,
-      int imgSize);
+      int imgSize) const;
 
     void execute(
       cl::CommandQueue & queue,
       gpu_util::GpuHandle const & gpuHandle,
       unsigned char const * img,
       int imgSize,
-      gpu_util::BufferWrapper & resBuffer);
+      gpu_util::BufferWrapper & resBuffer) const;
 
   private:
     cl::Program program;

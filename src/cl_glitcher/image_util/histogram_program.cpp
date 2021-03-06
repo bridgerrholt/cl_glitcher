@@ -28,7 +28,7 @@ HistogramProgram::HistogramProgram(gpu_util::GpuHandle const & gpuHandle) :
 HistogramProgram::ResultArr HistogramProgram::execute(
   gpu_util::GpuHandle const & gpuHandle,
   unsigned char const * img,
-  int imgSize)
+  int imgSize) const
 {
   using namespace gpu_util;
 
@@ -68,7 +68,7 @@ gpu_util::BufferWrapper HistogramProgram::execute(
   cl::CommandQueue & queue,
   gpu_util::GpuHandle const & gpuHandle,
   unsigned char const * img,
-  int imgSize)
+  int imgSize) const
 {
   using namespace gpu_util;
 
@@ -88,7 +88,7 @@ void HistogramProgram::execute(
   gpu_util::GpuHandle const & gpuHandle,
   unsigned char const * img,
   int imgSize,
-  gpu_util::BufferWrapper & resBuffer)
+  gpu_util::BufferWrapper & resBuffer) const
 {
   using namespace gpu_util;
 
