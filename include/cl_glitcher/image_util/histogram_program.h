@@ -18,7 +18,7 @@ class HistogramProgram
 
     std::array<unsigned int, 256> execute(
       gpu_util::GpuHandle const & gpuHandle,
-      unsigned int const * img,
+      unsigned char const * img,
       int imgSize);
 
   private:

@@ -19,7 +19,7 @@ TEST(TestClGlitcherImageUtil, Histogram)
   GpuHandle handle {init()};
   HistogramProgram program {handle};
 
-  std::array<unsigned int, 1024> img {};
+  std::array<unsigned char, 1024> img {};
   for (std::size_t i {0}; i < 1024; i++)
   {
     img[i] = i % 256;

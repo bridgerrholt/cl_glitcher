@@ -1,5 +1,5 @@
 void kernel histogram(
-  global unsigned int const * img,
+  global unsigned char const * img,
   global int const * imgSize,
   global unsigned int * histOut)
 {

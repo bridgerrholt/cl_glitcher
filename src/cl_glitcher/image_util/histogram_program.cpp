@@ -20,7 +20,7 @@ using namespace gpu_util;
 std::array<unsigned int, 256> runHistogram(
   GpuHandle const & gpuHandle,
   cl::Program const & program,
-  unsigned int const * imgArr,
+  unsigned char const * imgArr,
   int imgSize)
 {
   // apparently OpenCL only likes arrays ...
@@ -28,14 +28,14 @@ std::array<unsigned int, 256> runHistogram(
   int N[1] = {imgSize};
 
   // create buffers on device (allocate space on GPU)
-  cl::Buffer buffer_A(gpuHandle.context, CL_MEM_READ_ONLY, sizeof(int) * imgSize);
+  cl::Buffer buffer_A(gpuHandle.context, CL_MEM_READ_ONLY, sizeof(char) * imgSize);
   cl::Buffer buffer_C(gpuHandle.context, CL_MEM_READ_WRITE, sizeof(int) * 256);
   cl::Buffer buffer_N(gpuHandle.context, CL_MEM_READ_ONLY,  sizeof(int));
   // create a queue (a queue of commands that the GPU will execute)
   cl::CommandQueue queue(gpuHandle.context, gpuHandle.device);
 
   // push write commands to queue
-  queue.enqueueWriteBuffer(buffer_A, CL_TRUE, 0, sizeof(int)*imgSize, imgArr);
+  queue.enqueueWriteBuffer(buffer_A, CL_TRUE, 0, sizeof(char)*imgSize, imgArr);
   queue.enqueueWriteBuffer(buffer_N, CL_TRUE, 0, sizeof(int),   N);
 
   // RUN ZE KERNEL
@@ -70,7 +70,7 @@ HistogramProgram::HistogramProgram(gpu_util::GpuHandle const & gpuHandle) :
 
 std::array<unsigned int, 256> HistogramProgram::execute(
   gpu_util::GpuHandle const & gpuHandle,
-  unsigned int const * img,
+  unsigned char const * img,
   int imgSize)
 {
   using namespace gpu_util;
