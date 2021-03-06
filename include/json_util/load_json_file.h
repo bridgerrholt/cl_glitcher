@@ -7,10 +7,7 @@
 
 #include <string>
 
-#include <FastNoise.h>
 #include <rapidjson/document.h>
-
-#include "../noise_mode.h"
 
 namespace json_util
 {

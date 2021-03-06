@@ -1,0 +1,2 @@
+This is an example file
+named test_load_file_to_string_1.txt

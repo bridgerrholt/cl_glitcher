@@ -2,7 +2,7 @@
 
 #include <gtest/gtest.h>
 
-using namespace clgitch;
+using namespace clglitch;
 
 TEST(TestClGlitcherCli, RunJson)
 {
@@ -10,7 +10,7 @@ TEST(TestClGlitcherCli, RunJson)
   auto [res, code] = cli(3, strArr);
 
   CliResult resExpected;
-  resExpected.filename = "filename.json";
+  resExpected.jsonInstanceFilename = "filename.json";
 
   ASSERT_EQ(res, resExpected);
   ASSERT_EQ(0, code);
@@ -24,7 +24,35 @@ TEST(TestClGlitcherCli, J)
   auto [res, code] = cli(3, strArr);
 
   CliResult resExpected;
-  resExpected.filename = "filename.json";
+  resExpected.jsonInstanceFilename = "filename.json";
+
+  ASSERT_EQ(res, resExpected);
+  ASSERT_EQ(0, code);
+}
+
+
+
+TEST(TestClGlitcherCli, ModFile)
+{
+  char const * strArr[] {"cl_glitch", "--mod-file", "filename.json"};
+  auto [res, code] = cli(3, strArr);
+
+  CliResult resExpected;
+  resExpected.jsonModFilename = "filename.json";
+
+  ASSERT_EQ(res, resExpected);
+  ASSERT_EQ(0, code);
+}
+
+
+
+TEST(TestClGlitcherCli, M)
+{
+  char const * strArr[] {"cl_glitch", "-M", "filename.json"};
+  auto [res, code] = cli(3, strArr);
+
+  CliResult resExpected;
+  resExpected.jsonModFilename = "filename.json";
 
   ASSERT_EQ(res, resExpected);
   ASSERT_EQ(0, code);

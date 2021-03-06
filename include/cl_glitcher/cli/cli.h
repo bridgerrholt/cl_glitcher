@@ -8,13 +8,14 @@
 #include <tuple>
 #include <string>
 
-namespace clgitch
+namespace clglitch
 {
 
 class CliResult
 {
   public:
-    std::string filename;
+    std::string jsonInstanceFilename;
+    std::string jsonModFilename;
 
     bool operator==(CliResult const & other) const;
 };

@@ -6,8 +6,9 @@
 #define CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_LOAD_DYNAMIC_MODS_H
 
 #include <vector>
+#include <unordered_map>
 
-#include "mod_data.h"
+#include "mod_sys.h"
 
 namespace clglitch
 {
@@ -30,7 +31,9 @@ namespace clglitch
 /// \throws std::exception when the file can't be loaded, a library can't be
 ///         loaded, a library's ModData func can't be loaded and executed,
 ///         or the file doesn't contain sets of 3 lines.
-std::vector<ModData> loadDynamicMods(char const * configFileName);
+void loadDynamicMods(
+  ModSys & modSys,
+  char const * configFileName);
 
 }
 

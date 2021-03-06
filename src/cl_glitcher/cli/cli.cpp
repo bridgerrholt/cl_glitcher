@@ -4,13 +4,14 @@
 
 #include <cli/cli.h>
 
-namespace clgitch
+namespace clglitch
 {
 
 bool CliResult::operator==(CliResult const & other) const
 {
   return
-    filename == other.filename;
+    jsonInstanceFilename == other.jsonInstanceFilename &&
+    jsonModFilename == other.jsonModFilename;
 }
 
 
@@ -20,9 +21,13 @@ std::pair<CliResult, int> cli(int argc, char const * argv[])
   CliResult res;
   CLI::App app{"Image glitcher using OpenCL GPU computing."};
 
-  res.filename = "default";
+  //res.jsonInstanceFilename = "default";
   app.add_option(
-    "--run-json,-J", res.filename, "Run a JSON specification file");
+    "--run-json,-J", res.jsonInstanceFilename,
+    "Run a JSON specification file");
+  app.add_option(
+    "--mod-file,-M", res.jsonModFilename,
+    "Load mods from a JSON mod specification file");
 
   try
   {

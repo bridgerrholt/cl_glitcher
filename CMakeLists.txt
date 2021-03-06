@@ -3,7 +3,7 @@ project(CL_Glitcher)
 
 set(CMAKE_CXX_STANDARD 17)
 
-
+include(cmake/stringify_to_header.cmake)
 
 ### OpenCV ###
 # D:/Bridger/Documents/Programming/_Libs/opencv-3.4.2/bin-msys2/install/x64/mingw/lib OR
@@ -55,8 +55,9 @@ set(DYNALO_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/vendor/dynalo/include)
 
 
 ### CL_Glitcher ###
-set(CL_GLITCHER_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/cl_glitcher)
-set(JSON_UTIL_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include/json_util)
+set(ROOT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
+set(CL_GLITCHER_INCLUDE_DIR ${ROOT_INCLUDE_DIR}/cl_glitcher)
+set(JSON_UTIL_INCLUDE_DIR ${ROOT_INCLUDE_DIR}/json_util)
 add_executable(cl_glitcher_bin src/cl_glitcher/main.cpp src/cl_glitcher/cli/cli.cpp include/cl_glitcher/cli/cli.h test/cl_glitcher/cli/test_cl_glitcher_cli.cpp)
 target_include_directories(cl_glitcher_bin PUBLIC
     ${CL_GLITCHER_INCLUDE_DIR}
@@ -74,6 +75,17 @@ add_subdirectory(src/cl_glitcher)
 
 ### json_util ###
 add_subdirectory(src/json_util)
+
+
+
+### file_util ###
+add_subdirectory(src/file_util)
+
+
+
+### stringify_to_header ###
+add_subdirectory(src/stringify_to_header)
+
 
 
 ### Test

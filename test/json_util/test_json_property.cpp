@@ -39,6 +39,8 @@ class Owner
     float floatTest;
     double doubleTest;
     std::string stringTest;
+    std::vector<int> arrayTest;
+    std::vector<Obj> arrayOfObjTest;
     Obj objTest;
 
     static constexpr auto jsonProps = propList(
@@ -51,6 +53,8 @@ class Owner
       JSON_UTIL_MAKE_PROP(Owner, floatTest),
       JSON_UTIL_MAKE_PROP(Owner, doubleTest),
       JSON_UTIL_MAKE_PROP(Owner, stringTest),
+      JSON_UTIL_MAKE_PROP(Owner, arrayTest),
+      JSON_UTIL_MAKE_PROP(Owner, arrayOfObjTest),
       JSON_UTIL_MAKE_PROP(Owner, objTest)
     );
 
@@ -66,6 +70,8 @@ class Owner
         floatTest == other.floatTest &&
         doubleTest == other.doubleTest &&
         stringTest == other.stringTest &&
+        arrayTest == other.arrayTest &&
+        arrayOfObjTest == other.arrayOfObjTest &&
         objTest == other.objTest;
     }
 };
@@ -129,6 +135,17 @@ Document fullDoc()
     "floatTest": 10.5,
     "doubleTest": 100.25,
     "stringTest": "test string",
+    "arrayTest": [10, 20],
+    "arrayOfObjTest": [
+      {
+        "objIntTest": 1,
+        "objFloatTest": 1.5,
+        "objStringTest": "test1"
+      }, {
+        "objIntTest": 2,
+        "objFloatTest": 2.5,
+        "objStringTest": "test2"
+      }],
     "objTest": {
       "objIntTest": 100,
       "objFloatTest": 10.5,
@@ -156,7 +173,7 @@ Document emptyDoc()
 
 
 
-TEST(TestClGlitcherCli, DeserializeAllNoOptional)
+TEST(TestJsonUtil, DeserializeAllNoOptional)
 {
   auto d = fullDoc();
 
@@ -169,6 +186,11 @@ TEST(TestClGlitcherCli, DeserializeAllNoOptional)
     -300, 300,
     10.5, 100.25,
     "test string",
+    { 10, 20 },
+    {
+      Obj { 1, 1.5, "test1"},
+      Obj { 2, 2.5, "test2"}
+    },
     {
       100, 10.5, "test"
     }
@@ -178,8 +200,7 @@ TEST(TestClGlitcherCli, DeserializeAllNoOptional)
 }
 
 
-
-TEST(TestClGlitcherCli, DeserializeAllOptional)
+TEST(TestJsonUtil, DeserializeAllOptional)
 {
   auto d = fullDoc();
 
@@ -201,7 +222,45 @@ TEST(TestClGlitcherCli, DeserializeAllOptional)
 }
 
 
-TEST(TestClGlitcherCli, DeserializeAllOptionalEmptyJson)
+TEST(TestJsonUtil, DeserializeAllIndividual)
+{
+  auto d = fullDoc();
+
+  Owner o;
+  deserialize(d["boolTestT"], o.boolTestT);
+  deserialize(d["boolTestF"], o.boolTestF);
+  deserialize(d["intTest"], o.intTest);
+  deserialize(d["uintTest"], o.uintTest);
+  deserialize(d["int64Test"], o.int64Test);
+  deserialize(d["uint64Test"], o.uint64Test);
+  deserialize(d["floatTest"], o.floatTest);
+  deserialize(d["doubleTest"], o.doubleTest);
+  deserialize(d["stringTest"], o.stringTest);
+  deserialize(d["arrayTest"], o.arrayTest);
+  deserialize(d["arrayOfObjTest"], o.arrayOfObjTest);
+  deserialize(d["objTest"], o.objTest);
+
+  Owner expected {
+    true, false,
+    -200, 200,
+    -300, 300,
+    10.5, 100.25,
+    "test string",
+    { 10, 20 },
+    {
+      Obj { 1, 1.5, "test1"},
+      Obj { 2, 2.5, "test2"}
+    },
+    {
+      100, 10.5, "test"
+    }
+  };
+
+  ASSERT_EQ(o, expected);
+}
+
+
+TEST(TestJsonUtil, DeserializeAllOptionalEmptyJson)
 {
   auto d = emptyDoc();
 
@@ -233,7 +292,7 @@ struct Parent
 };
 
 
-TEST(TestClGlitcherCli, DeserializeNestedObj)
+TEST(TestJsonUtil, DeserializeNestedObj)
 {
   Document d;
   d.Parse(R"({"obj": {"name": "bob"}})");
