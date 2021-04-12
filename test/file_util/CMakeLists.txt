@@ -1,5 +1,6 @@
 SET(test_file_util_sources
-        test_load_file_to_string.cpp)
+        test_load_file_to_string.cpp
+        test_append_number.cpp)
 
 # Boilerplate to make file list absolute directories.
 # Required for the the master test executable

@@ -5,7 +5,7 @@
 #ifndef CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_STATIC_MOD_DATA_H
 #define CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_STATIC_MOD_DATA_H
 
-#include "mod_defs.h"
+#include <cmd_execution/mod_defs.h>
 
 namespace clglitch
 {

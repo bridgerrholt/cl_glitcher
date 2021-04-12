@@ -1,0 +1,27 @@
+
+str_stringify_to_header(cmd_line
+        clglitch::histogram_shift::histogram_shift_program
+        histogramShiftStr
+        ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/static_mods/histogram_shift.cl
+        ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/static_mods/histogram_shift.h)
+add_custom_command(
+        OUTPUT ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/static_mods/histogram_shift.h
+        ${cmd_line}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        DEPENDS stringify_to_header_bin ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/static_mods/histogram_shift.cl
+)
+
+
+add_library(cl_glitcher_mod_histogram_shift STATIC histogram_shift.cpp
+        ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/static_mods/histogram_shift.cl
+        ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/static_mods/histogram_shift.h histogram_shift_program.cpp)
+target_include_directories(cl_glitcher_mod_histogram_shift PUBLIC
+        ${ROOT_INCLUDE_DIR}
+        ${CL_GLITCHER_INCLUDE_DIR}
+        ${CL_GLITCHER_INCLUDE_DIR}/static_mods/histogram_shift)
+
+target_link_libraries(cl_glitcher_mod_histogram_shift PUBLIC
+        cl_glitcher_gpu_util
+        json_util
+        cl_glitcher_image_util
+        cl_glitcher_gpu_programs)

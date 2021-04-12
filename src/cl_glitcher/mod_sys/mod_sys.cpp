@@ -29,4 +29,27 @@ void ModSys::addDynamicMod(
   modLibArray.emplace_back(std::forward<dynalo::library>(lib));
 }
 
+
+
+StaticModData const * ModSys::getStaticMod(std::string const & name) const
+{
+  auto it = staticModMap.find(name);
+  if (it != staticModMap.end())
+    return &it->second;
+  else
+    return nullptr;
+}
+
+
+
+DynamicModData const * ModSys::getDynamicMod(std::string const & name) const
+{
+  auto it = dynamicModMap.find(name);
+  if (it != dynamicModMap.end())
+    return &it->second;
+  else
+    return nullptr;
+}
+
+
 }

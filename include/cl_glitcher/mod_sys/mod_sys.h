@@ -5,9 +5,11 @@
 #ifndef CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_MOD_SYS_H
 #define CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_MOD_SYS_H
 
-#include <dynalo/dynalo.hpp>
 
 #include "dynamic_mod_data.h"
+
+#include <dynalo/dynalo.hpp>
+
 #include "static_mod_data.h"
 
 namespace clglitch
@@ -28,6 +30,9 @@ class ModSys
 
     void addDynamicMod(
       std::string && name, DynamicModData modData, dynalo::library && lib);
+
+    StaticModData const * getStaticMod(std::string const & name) const;
+    DynamicModData const * getDynamicMod(std::string const & name) const;
 
   private:
     DynamicModDataMap dynamicModMap;

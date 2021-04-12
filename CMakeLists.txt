@@ -11,7 +11,7 @@ include(cmake/stringify_to_header.cmake)
 set(OPENCV_LIB_DIR "" CACHE PATH "Directory of OpenCV library files")
 
 # D:/Bridger/Documents/Programming/_Libs/opencv-3.4.2/bin-msys2/install/include OR
-# D:\Programs\msys64\mingw64\include\opencv4\opencv2
+# D:\Programs\msys64\mingw64\include\opencv4
 set(OPENCV_INCLUDE_DIR "" CACHE PATH "Directory of OpenCV header files")
 
 find_library(CORE_LIB NAMES opencv_core PATHS ${OPENCV_LIB_DIR})
@@ -58,15 +58,18 @@ set(DYNALO_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/vendor/dynalo/include)
 set(ROOT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(CL_GLITCHER_INCLUDE_DIR ${ROOT_INCLUDE_DIR}/cl_glitcher)
 set(JSON_UTIL_INCLUDE_DIR ${ROOT_INCLUDE_DIR}/json_util)
-add_executable(cl_glitcher_bin src/cl_glitcher/main.cpp src/cl_glitcher/cli/cli.cpp include/cl_glitcher/cli/cli.h test/cl_glitcher/cli/test_cl_glitcher_cli.cpp)
+add_executable(cl_glitcher_bin src/cl_glitcher/main.cpp)
 target_include_directories(cl_glitcher_bin PUBLIC
-    ${CL_GLITCHER_INCLUDE_DIR}
-    ${OPENCV_INCLUDE_DIR}
-    ${OPENCL_INCLUDE_DIR}
-    ${CLI11_INCLUDE_DIR})
+        ${CL_GLITCHER_INCLUDE_DIR}
+        ${ROOT_INCLUDE_DIR})
+target_include_directories(cl_glitcher_bin SYSTEM PUBLIC
+        ${OPENCV_INCLUDE_DIR}
+        ${OPENCL_INCLUDE_DIR}
+        ${CLI11_INCLUDE_DIR})
 target_link_libraries(cl_glitcher_bin PUBLIC
-    ${CORE_LIB} ${IMG_PROC_LIB} ${HIGH_GUI_LIB} ${IMAGE_CODECS_LIB}
-    ${OPENCL_LIB})
+        ${CORE_LIB} ${IMG_PROC_LIB} ${HIGH_GUI_LIB} ${IMAGE_CODECS_LIB}
+        ${OPENCL_LIB}
+        cl_glitcher_cli)
 set_target_properties(cl_glitcher_bin
     PROPERTIES OUTPUT_NAME cl_glitcher) # Rename output binary to cl_glitcher
 add_subdirectory(src/cl_glitcher)
@@ -89,4 +92,24 @@ add_subdirectory(src/stringify_to_header)
 
 
 ### Test
-add_subdirectory(test)
+if(NOT DEFINED CL_GLITCHER_NO_TEST)
+    add_subdirectory(test)
+endif()
+
+
+
+### Graph generation
+if (NOT DEFINED CL_GLITCHER_NO_GRAPH)
+    message(${CMAKE_COMMAND})
+    message(${CMAKE_BINARY_DIR})
+    add_custom_target(cl_glitcher_graphviz ALL
+            COMMAND ${CMAKE_COMMAND} "--graphviz=graphviz/cl_glitcher_graphviz.dot" .
+            COMMAND dot -Tpng cl_glitcher_graphviz.dot -o cl_glitcher_graphviz.png
+            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+            )
+endif()
+#if(DEFINED CL_GLITCHER_GRAPH)
+#    set(GRAPHVIZ_GRAPH_NAME "cl_glitcher_graph")
+    #set(GRAPHVIZ_CUSTOM_TARGETS TRUE)
+#    set(GRAPHVIZ_EXECUTABLES FALSE)
+#endif()

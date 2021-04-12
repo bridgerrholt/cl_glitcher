@@ -2,16 +2,16 @@
 // Created by bridg on 3/5/2021.
 //
 
-#include <image_util/histogram_program.h>
+#include <gpu_programs/histogram_program.h>
 
 #include <gpu_util/build_program.h>
 #include <gpu_util/buffer_wrapper.h>
 #include <gpu_util/set_args.h>
 
-#include <compute_kernels/image_util/histogram.h>
+#include <compute_kernels/gpu_programs/histogram.h>
 #include <gpu_util/init.h>
 
-namespace clglitch::image_util {
+namespace clglitch::gpu_programs {
 
 HistogramProgram::HistogramProgram(gpu_util::GpuHandle const & gpuHandle) :
   program {
@@ -83,6 +83,25 @@ gpu_util::BufferWrapper HistogramProgram::execute(
 
 
 
+gpu_util::BufferWrapper HistogramProgram::execute(
+  cl::CommandQueue & queue,
+  gpu_util::GpuHandle const & gpuHandle,
+  gpu_util::BufferWrapper const & img,
+  int imgSize) const
+{
+  using namespace gpu_util;
+
+  BufferWrapper bwRes {
+    gpuHandle, CL_MEM_READ_WRITE, resultBytes()
+  };
+
+  execute(queue, gpuHandle, img, imgSize, bwRes);
+
+  return bwRes;
+}
+
+
+
 void HistogramProgram::execute(
   cl::CommandQueue & queue,
   gpu_util::GpuHandle const & gpuHandle,
@@ -98,6 +117,20 @@ void HistogramProgram::execute(
     )
   };
 
+  execute(queue, gpuHandle, bwA, imgSize, resBuffer);
+}
+
+
+
+void HistogramProgram::execute(
+  cl::CommandQueue & queue,
+  gpu_util::GpuHandle const & gpuHandle,
+  gpu_util::BufferWrapper const & img,
+  int imgSize,
+  gpu_util::BufferWrapper & resBuffer) const
+{
+  using namespace gpu_util;
+
   auto bwN {
     BufferWrapper::writeBufferValue(
       queue, gpuHandle, CL_MEM_READ_ONLY, imgSize
@@ -105,7 +138,7 @@ void HistogramProgram::execute(
   };
 
   cl::Kernel histogram(program, "histogram");
-  setArgs(histogram, bwA, bwN, resBuffer);
+  setArgs(histogram, img, bwN, resBuffer);
   queue.enqueueNDRangeKernel(
     histogram, cl::NullRange, cl::NDRange(16), cl::NullRange);
 }

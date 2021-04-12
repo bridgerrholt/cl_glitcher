@@ -5,12 +5,13 @@
 #ifndef CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_DYNAMIC_MOD_DATA_H
 #define CL_GLITCHER_INCLUDE_CL_GLITCHER_MOD_SYS_DYNAMIC_MOD_DATA_H
 
+#include <cmd_execution/mod_defs.h>
+
 #include <string>
 #include <functional>
 
 #include <rapidjson/document.h>
 
-#include "mod_defs.h"
 #include "mod_data_interface.h"
 
 namespace clglitch

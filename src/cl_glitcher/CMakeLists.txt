@@ -3,8 +3,11 @@ set(CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/openc
 
 add_subdirectory(cli)
 add_subdirectory(gpu_util)
+add_subdirectory(gpu_programs)
 add_subdirectory(image_util)
+add_subdirectory(mod_environment)
 add_subdirectory(mod_sys)
+add_subdirectory(cmd_execution)
 
 # Static mods
-add_subdirectory(static_mods/fractal_hist)
+add_subdirectory(static_mods)

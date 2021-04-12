@@ -9,12 +9,13 @@ add_subdirectory(json_util)
 add_subdirectory(stringify_to_header)
 
 
-get_target_property(test_cl_glitcher_sources test_cl_glitcher SOURCES)
-get_target_property(test_cl_glitcher_libs test_cl_glitcher LINK_LIBRARIES)
+#get_target_property(test_cl_glitcher_sources test_cl_glitcher SOURCES)
+#get_target_property(test_cl_glitcher_libs test_cl_glitcher LINK_LIBRARIES)
 
 get_target_property(test_json_util_sources test_json_util SOURCES)
 get_target_property(test_json_util_libs test_json_util LINK_LIBRARIES)
 
-add_executable(test_all ${test_cl_glitcher_sources} ${test_json_util_sources})
-target_link_libraries(test_all PUBLIC ${test_cl_glitcher_libs} ${test_json_util_libs})
+#add_executable(test_all ${test_cl_glitcher_sources} ${test_json_util_sources})
+#target_link_libraries(test_all PUBLIC ${test_cl_glitcher_libs} ${test_json_util_libs})
+
 #add_dependencies(test_all pre_test_stringify_to_header)

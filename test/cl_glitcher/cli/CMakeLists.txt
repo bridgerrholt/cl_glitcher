@@ -1,5 +1,6 @@
 SET(test_cl_glitcher_cli_sources
-        test_cl_glitcher_cli.cpp)
+        test_cl_glitcher_cli.cpp
+        test_cl_glitcher_cli_result.cpp)
 
 # Boilerplate to make file list absolute directories.
 # Required for the the master test executable

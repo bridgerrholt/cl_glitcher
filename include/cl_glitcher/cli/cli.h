@@ -8,19 +8,13 @@
 #include <tuple>
 #include <string>
 
+#include <cmd_execution/cmd_execution_params.h>
+
 namespace clglitch
 {
 
-class CliResult
-{
-  public:
-    std::string jsonInstanceFilename;
-    std::string jsonModFilename;
-
-    bool operator==(CliResult const & other) const;
-};
-
-std::pair<CliResult, int> cli(int argc, char const * argv[]);
+std::pair<CmdExecutionParams, int> cli(int argc, char const * argv[]);
 
 }
+
 #endif //CL_GLITCHER_INCLUDE_CL_GLITCHER_CLI_CLI_H

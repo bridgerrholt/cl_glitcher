@@ -13,13 +13,11 @@ std::string const modFile {std::string{directory} + "/test_dynamic_mod_0.json"};
 
 TEST(TestClGlitcherModSys, LoadDynamicMod)
 {
-  ModDataMap modMap;
-  loadDynamicMods(modFile.c_str(), modMap);
+  ModSys modMap;
+  loadDynamicMods(modMap, modFile.c_str());
 
-  ModDataMap modMapExepected;
-  modMapExepected.insert({
-    "test_cl_glitcher_mod_sys_dynamic_mod_lib_1",
-    {"execute"}
-  });
-  ASSERT_EQ(modMap, modMapExepected);
+  ASSERT_TRUE(
+    modMap.getDynamicMod(
+      "test_cl_glitcher_mod_sys_dynamic_mod_lib_1"
+      ) != nullptr);
 }

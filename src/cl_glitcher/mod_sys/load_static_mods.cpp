@@ -4,13 +4,13 @@
 
 #include <mod_sys/load_static_mods.h>
 
-#include <static_mods/fractal_hist/fractal_hist.h>
+#include <static_mods/histogram_shift/histogram_shift.h>
 
 namespace clglitch {
 
 void loadStaticMods(ModSys & modSys)
 {
-  modSys.addStaticMod("Fractal Hist", fractal_hist::getModData());
+  modSys.addStaticMod("Fractal Hist", histogram_shift::getModData());
 }
 
 }
