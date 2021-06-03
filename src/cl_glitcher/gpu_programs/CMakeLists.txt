@@ -4,18 +4,14 @@
 #        ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/gpu_programs/histogram.cl
 #        ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/gpu_programs/histogram.h)
 
-str_stringify_to_header(cmd_line
-        clglitch::gpu_programs::histogram_program
-        histogramStr
-        ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/gpu_programs/histogram.cl
-        ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/gpu_programs/histogram.h)
 add_custom_command(
         OUTPUT ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/gpu_programs/histogram.h
-        #COMMAND $<TARGET_FILE:stringify_to_header_bin> clglitch::gpu_programs::histogram_program histogramStr ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/gpu_programs/histogram.cl ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/gpu_programs/histogram.h
-        ${cmd_line}
+        COMMAND $<TARGET_FILE:stringify_to_header_bin>
+        ARGS clglitch::gpu_programs::histogram_program histogramStr ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/gpu_programs/histogram.cl ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/gpu_programs/histogram.h
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         DEPENDS stringify_to_header_bin ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/gpu_programs/histogram.cl
 )
+set_property(SOURCE histogram_program.cpp APPEND PROPERTY OBJECT_DEPENDS ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/gpu_programs/histogram.h)
 
 add_library(cl_glitcher_gpu_programs STATIC
         histogram_program.cpp
