@@ -19,6 +19,7 @@ add_custom_command(
 
 add_library(cl_glitcher_gpu_programs STATIC
         histogram_program.cpp
+        sort_histogram.cpp
         ${CL_GLITCHER_COMPUTE_KERNELS_SRC_DIR}/gpu_programs/histogram.cl
         ${CL_GLITCHER_COMPUTE_KERNELS_DIR}/gpu_programs/histogram.h)
 #target_sources(cl_glitcher_gpu_programs PUBLIC)

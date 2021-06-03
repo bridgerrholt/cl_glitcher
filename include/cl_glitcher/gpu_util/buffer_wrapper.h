@@ -118,19 +118,19 @@ class BufferWrapper
       cl::CommandQueue & queue, void const * arr, std::size_t bytes);
 
     template <class Arr>
-    void enqueueRead(cl::CommandQueue & queue, Arr & arr)
+    void enqueueRead(cl::CommandQueue & queue, Arr & arr) const
     {
       enqueueRead(queue, arr.data(), arr.size());
     }
 
     template <class Type>
-    void enqueueRead(cl::CommandQueue & queue, Type * arr, std::size_t arrSize)
+    void enqueueRead(cl::CommandQueue & queue, Type * arr, std::size_t arrSize) const
     {
       enqueueReadVoid(queue, arr, calcSize(arr, arrSize));
     }
 
     void enqueueReadVoid(
-      cl::CommandQueue & queue, void * arr, std::size_t bytes);
+      cl::CommandQueue & queue, void * arr, std::size_t bytes) const;
 
     cl::Buffer const & getBuffer() const;
     cl::Buffer & getBuffer();

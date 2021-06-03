@@ -30,9 +30,10 @@ HistogramShiftProgram::HistogramShiftProgram(
 void HistogramShiftProgram::execute(
   cl::CommandQueue & queue,
   gpu_util::GpuHandle const & gpuHandle,
-  gpu_util::BufferWrapper & img,
+  gpu_util::BufferWrapper & imgIn,
+  gpu_util::BufferWrapper & imgCurrent,
   int imgSize,
-  gpu_util::BufferWrapper const & hist,
+  gpu_util::BufferWrapper const & histIndices,
   unsigned incMin,
   unsigned incMax,
   float incFactor) const
@@ -65,7 +66,7 @@ void HistogramShiftProgram::execute(
 
   cl::Kernel histogramShift(program, "histogramShift");
   setArgs(
-    histogramShift, img, bwImgSize, hist, bwIncMin, bwIncMax, bwIncFactor);
+    histogramShift, imgIn, imgCurrent, bwImgSize, histIndices, bwIncMin, bwIncMax, bwIncFactor);
   queue.enqueueNDRangeKernel(
     histogramShift, cl::NullRange, cl::NDRange(16), cl::NullRange);
 }

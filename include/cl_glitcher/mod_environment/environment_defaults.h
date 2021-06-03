@@ -8,7 +8,7 @@
 namespace clglitch::defaults
 {
 
-constexpr bool searchForLocalVar = true;
+constexpr bool searchForLocalEnv = true;
 constexpr char envDirRelativeToInput[] = ".";
 constexpr char envFilename[] = "env.json";
 

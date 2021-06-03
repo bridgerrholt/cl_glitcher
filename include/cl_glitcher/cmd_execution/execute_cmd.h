@@ -14,6 +14,7 @@ void executeCmd(
   ModSys const & modSys,
   CmdEnvironment const & cmdEnv,
   SystemEnvironment const & systemEnv,
+  std::string const & cmdPath,
   JsonObjType const & cmd);
 
 }

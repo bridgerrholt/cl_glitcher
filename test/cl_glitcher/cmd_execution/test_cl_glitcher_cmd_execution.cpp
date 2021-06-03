@@ -22,5 +22,6 @@ TEST(TestClGlitcherCmdExecution, RunCmd1)
     cmd1File
   };
 
-  CmdExecution exec {params};
+  auto exec = CmdExecution::loadAndExecute(params);
+
 }

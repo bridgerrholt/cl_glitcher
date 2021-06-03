@@ -9,6 +9,8 @@ target_link_libraries(test_cl_glitcher_mod_sys_dynamic_mod_lib_1 cl_glitcher_mod
 get_target_property(test_includes_msg test_cl_glitcher_mod_sys_dynamic_mod_lib_1 INCLUDE_DIRECTORIES)
 message(${test_includes_msg})
 
+# Required for dynalo when using MinGW.
+# This is because dynalo doesn't expect lib prefix on Windows.
 IF (WIN32)
     IF (NOT MSVC)
         set_target_properties(

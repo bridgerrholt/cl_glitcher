@@ -5,21 +5,19 @@
 #ifndef CL_GLITCHER_INCLUDE_CL_GLITCHER_GPU_PROGRAMS_HISTOGRAM_PROGRAM_H
 #define CL_GLITCHER_INCLUDE_CL_GLITCHER_GPU_PROGRAMS_HISTOGRAM_PROGRAM_H
 
-#include <array>
-
 #include <gpu_util/gpu_handle.h>
 #include <gpu_util/buffer_wrapper.h>
+
+#include "histogram_array.h"
 
 namespace clglitch::gpu_programs {
 
 class HistogramProgram
 {
   public:
-    using ResultArr = std::array<unsigned int, 256>;
-
     explicit HistogramProgram(gpu_util::GpuHandle const & gpuHandle);
 
-    ResultArr execute(
+    HistogramArray execute(
       gpu_util::GpuHandle const & gpuHandle,
       unsigned char const * img,
       int imgSize) const;
@@ -52,12 +50,6 @@ class HistogramProgram
 
   private:
     cl::Program program;
-
-    static constexpr std::size_t resultBytes()
-    {
-      return
-        std::tuple_size<ResultArr>::value * sizeof(ResultArr::value_type);
-    }
 };
 
 }

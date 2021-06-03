@@ -11,6 +11,7 @@
 #include <histogram_shift_program.h>
 #include <file_util/append_number.h>
 #include <gpu_programs/histogram_program.h>
+#include <gpu_programs/sort_histogram.h>
 
 
 namespace clglitch::histogram_shift
@@ -27,15 +28,18 @@ void iterExecute(
 
 template <class Functor>
 void imageNameLoop(
-  std::string const & cmdFileDir,
+  std::filesystem::path const & path,
   std::string const & ext,
   std::size_t imageCount,
   Functor && iterFunc)
 {
   std::size_t digits {file_util::calcDigits(imageCount)};
 
+  auto outPath = path.parent_path();
+  outPath /= path.stem();
+
   for (std::size_t i {0}; i < imageCount; i++) {
-    std::string outputFile {cmdFileDir};
+    std::string outputFile {outPath.generic_string() + "_"};
     file_util::appendNumber(outputFile, digits, i);
     outputFile += ext;
 
@@ -49,7 +53,7 @@ std::string getExt(CmdEnvironment const & cmdEnv)
 {
   JsonObjType const * extObj = cmdEnv.getVar("outputExtension");
   if (extObj == nullptr) {
-    throw std::runtime_error("ext environment variable must be defined");
+    throw std::runtime_error("outputExtension environment variable must be defined");
   }
 
   auto extLength = extObj->GetStringLength();
@@ -82,26 +86,50 @@ void jsonObjExecute(JsonObjExecuteParams const & params)
   auto const * imageCountField = params.cmdEnv.getVar("imageCount");
   assert(imageCountField != nullptr);
 
+  auto imgCurrent = gpu_util::BufferWrapper::writeBuffer(
+    params.commandQueue,
+    params.gpuHandle,
+    CL_MEM_READ_WRITE,
+    params.currentImageMat.data,
+    params.imgSizeBytes
+  );
+
+  HistogramProgram histProgram {params.gpuHandle};
+  // TODO: Use the resBuffer overload (instead of allocating a new buffer each iteration)
+  auto hist = histProgram.execute(
+    params.commandQueue,
+    params.gpuHandle,
+    params.currentImage, // TODO: Change name to imgIn
+    params.imgSizeBytes);
+
+  /*HistogramArray res;
+  hist.enqueueRead(params.commandQueue, res);
+  params.commandQueue.finish();*/
+
+  auto histIndices =
+    sortHistogram(params.commandQueue, params.gpuHandle, hist);
+  auto histIndicesBuffer = gpu_util::BufferWrapper::writeBuffer(
+    params.commandQueue,
+    params.gpuHandle,
+    CL_MEM_READ_WRITE, // TODO: Change to READ_ONLY?
+    histIndices);
+
+  auto const & path = params.systemEnv.cmdFilePath();
+
   imageNameLoop(
-    params.systemEnv.cmdFileDir(),
+    path,
     ext,
     imageCountField->GetUint(),
     [&](std::string const & outputFilename) {
-      HistogramProgram histProgram {params.gpuHandle};
-      // TODO: Use the resBuffer overload (instead of allocating a new buffer each iteration)
-      auto hist = histProgram.execute(
-        params.commandQueue,
-        params.gpuHandle,
-        params.currentImage,
-        params.imgSizeBytes);
 
       HistogramShiftProgram program {params.gpuHandle};
       program.execute(
         params.commandQueue,
         params.gpuHandle,
         params.currentImage,
+        imgCurrent,
         params.imgSizeBytes,
-        hist,
+        histIndicesBuffer,
         data.incMin,
         data.incMax,
         data.incFactor);
@@ -112,7 +140,7 @@ void jsonObjExecute(JsonObjExecuteParams const & params)
       //res.resize(params.imgSizeBytes);
 
       // read result from GPU to here
-      params.currentImage.enqueueRead(
+      imgCurrent.enqueueRead(
         params.commandQueue,
         params.currentImageMat.data,
         params.imgSizeBytes);

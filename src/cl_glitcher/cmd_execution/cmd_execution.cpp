@@ -67,7 +67,7 @@ void CmdExecution::loadCmd()
 void CmdExecution::loadCmdEnv()
 {
   // TODO: Test .generic_string() does not end in /
-  std::filesystem::path cmdFilePath {params.jsonModFilename};
+  std::filesystem::path cmdFilePath {params.jsonInstanceFilename};
   std::string cmdPath {cmdFilePath.parent_path().generic_string()};
 
   auto inlineEnv = getInlineEnv();
@@ -98,7 +98,12 @@ void CmdExecution::loadSystemEnv()
 
 void CmdExecution::execute() const
 {
-  executeCmd(cmdData.modSys, cmdData.cmdEnv, cmdData.systemEnv, cmdData.cmd);
+  executeCmd(
+    cmdData.modSys,
+    cmdData.cmdEnv,
+    cmdData.systemEnv,
+    params.jsonInstanceFilename,
+    cmdData.cmd);
 }
 
 

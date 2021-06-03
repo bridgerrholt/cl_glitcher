@@ -10,7 +10,7 @@ namespace clglitch {
 
 void loadStaticMods(ModSys & modSys)
 {
-  modSys.addStaticMod("Fractal Hist", histogram_shift::getModData());
+  modSys.addStaticMod("Histogram Shift", histogram_shift::getModData());
 }
 
 }

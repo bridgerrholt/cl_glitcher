@@ -1,9 +1,14 @@
 {
-  "cmd": "histogramShift",
+  "cmd": "Histogram Shift",
   "data": {
-
+    "incMin": 0,
+    "incMax": 255,
+    "incFactor": 0.1
   },
   "env": {
-    "searchForLocalEnv": false
+    "searchForLocalEnv": false,
+    "inputImage": "aglais_urticae.png",
+    "outputExtension": "png",
+    "imageCount": 100
   }
 }

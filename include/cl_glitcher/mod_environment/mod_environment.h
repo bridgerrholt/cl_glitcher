@@ -28,6 +28,8 @@ class CmdEnvironment
     static CmdEnvironment defaultLocal(
       JsonDocType globalEnv, JsonObjType inlineEnv);
 
+    static CmdEnvironment fromInline(JsonObjType inlineEnv);
+
     /// Get the JSON field `name`.
     /// If it exists in the local env, return that.
     /// If it exists in the global env, return that.

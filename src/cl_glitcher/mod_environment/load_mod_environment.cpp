@@ -51,11 +51,26 @@ void appendEnvFilename(std::string & str, JsonObjType const & globalEnv)
   }
 }
 
-void maybeLoadLocalEnv(CmdEnvironment & env)
+void maybeLoadLocalEnv(
+  CmdEnvironment & env,
+  std::string & commandFileDirectory)
 {
-  auto const * searchForLocalVarPtr = env.getVar("searchForLocalVar");
-  if (searchForLocalVarPtr != nullptr) {
-    auto localEnv = loadJsonFile(localEnvFilename);
+  if (env.getVar("searchForLocalEnv")->GetBool()) {
+    auto const & envDirRelativeToInput =
+      env.getVar("envDirRelativeToInput");
+
+    if (
+      envDirRelativeToInput->GetString()[0] == '.' &&
+      envDirRelativeToInput->GetStringLength() == 0)
+    {
+      commandFileDirectory += "/";
+      commandFileDirectory += env.getVar("envDirRelativeToInput")->GetString();
+    }
+
+    commandFileDirectory += "/";
+    commandFileDirectory += env.getVar("envFilename")->GetString();
+
+    auto localEnv = json_util::loadJsonFile(commandFileDirectory);
     env.setLocalEnv(std::move(localEnv));
   }
 }
@@ -71,13 +86,12 @@ CmdEnvironment loadModEnvironment(
 
   auto globalEnv = loadJsonFile(globalEnvFilename);
 
-  std::string & localEnvFilename {commandFileDirectory};
-  appendEnvDir(localEnvFilename, globalEnv);
-  appendEnvFilename(localEnvFilename, globalEnv);
+  auto env = CmdEnvironment::defaultLocal(
+    std::move(globalEnv), std::move(inlineEnv));
 
-  auto localEnv = loadJsonFile(localEnvFilename);
+  maybeLoadLocalEnv(env, commandFileDirectory);
 
-  return {std::move(globalEnv), std::move(localEnv), std::move(inlineEnv)};
+  return env;
 }
 
 
@@ -87,19 +101,13 @@ CmdEnvironment loadModEnvironmentDefaultGlobal(
   JsonObjType inlineEnv)
 {
   using namespace json_util;
-  using namespace defaults;
 
-  std::string & localEnvFilename {commandFileDirectory};
-  localEnvFilename += "/";
-  localEnvFilename += envDirRelativeToInput;
-  localEnvFilename += "/";
-  localEnvFilename += envFilename;
+  auto env = CmdEnvironment::fromInline(
+    std::move(inlineEnv));
 
-  // TODO: Exception handling
-  auto localEnv = loadJsonFile(localEnvFilename);
+  maybeLoadLocalEnv(env, commandFileDirectory);
 
-  return CmdEnvironment::fromLocalAndInline(
-    std::move(localEnv), std::move(inlineEnv));
+  return env;
 }
 
 }

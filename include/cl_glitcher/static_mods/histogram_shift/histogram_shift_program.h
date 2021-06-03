@@ -21,9 +21,10 @@ class HistogramShiftProgram
     void execute(
       cl::CommandQueue & queue,
       gpu_util::GpuHandle const & gpuHandle,
-      gpu_util::BufferWrapper & img,
+      gpu_util::BufferWrapper & imgIn,
+      gpu_util::BufferWrapper & imgCurrent,
       int imgSize,
-      gpu_util::BufferWrapper const & hist,
+      gpu_util::BufferWrapper const & histIndices,
       unsigned incMin,
       unsigned incMax,
       float incFactor) const;

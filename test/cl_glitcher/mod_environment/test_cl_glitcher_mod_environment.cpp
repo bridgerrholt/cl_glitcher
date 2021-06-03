@@ -47,6 +47,40 @@ TEST(TestClGlitcherModSys, ModEnvironment0)
 }
 
 
+TEST(TestClGlitcherModSys, ModEnvironmentFromInline)
+{
+  JsonDocType inlineEnv {rapidjson::kObjectType};
+  inlineEnv.AddMember("test", "success", inlineEnv.GetAllocator());
+  CmdEnvironment env {
+    CmdEnvironment::fromInline(JsonObjType{inlineEnv.GetObject()})
+  };
+
+  ASSERT_TRUE(env.getVar("test") != nullptr);
+  ASSERT_TRUE(env.getInlineVar("test") != nullptr);
+  ASSERT_TRUE(env.getLocalVar("test") == nullptr);
+  ASSERT_TRUE(env.getGlobalVar("test") == nullptr);
+  ASSERT_STREQ(env.getVar("test")->GetString(), "success");
+}
+
+
+TEST(TestClGlitcherModSys, ModEnvironmentFromInlineWithDefault)
+{
+  JsonDocType inlineEnv {rapidjson::kObjectType};
+  inlineEnv.AddMember("test", "success", inlineEnv.GetAllocator());
+  CmdEnvironment env {
+    CmdEnvironment::fromInline(JsonObjType{inlineEnv.GetObject()})
+  };
+
+  ASSERT_TRUE(env.getVar("test") != nullptr);
+  ASSERT_TRUE(env.getInlineVar("test") != nullptr);
+  ASSERT_TRUE(env.getLocalVar("test") == nullptr);
+  ASSERT_TRUE(env.getGlobalVar("test") == nullptr);
+  ASSERT_STREQ(env.getVar("test")->GetString(), "success");
+}
+
+
+
+
 /*TEST(TestClGlitcherModSys, LoadModEnvironment)
 {
   auto env = loadModEnvironment(test0GlobalEnvFile, test0Directory);

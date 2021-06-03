@@ -1,7 +1,8 @@
 void kernel histogramShift(
-  global unsigned char * img,
+  global unsigned char * imgIn,
+  global unsigned char * imgCurrent,
   global int const * imgSizeBytes,
-  global unsigned int const * hist,
+  global unsigned char const * histIndices,
   global unsigned const * incMin,
   global unsigned const * incMax,
   global float const * incFactor)
@@ -19,8 +20,9 @@ void kernel histogramShift(
   }
 
   for (int i = start; i < stop; i++) {
-    int * v = img + i;
-    int h = hist[*v]
+    global unsigned char * vIn = imgIn + i;
+    global unsigned char * v = imgCurrent + i;
+    int h = histIndices[*vIn];
     if (*incMin <= h && h <= *incMax) {
       *v = *v + (unsigned char)(round(*incFactor * 255.f));
     }

@@ -42,7 +42,8 @@ CmdEnvironment CmdEnvironment::fromLocalAndInline(
 }
 
 
-CmdEnvironment defaultLocal(
+
+CmdEnvironment CmdEnvironment::defaultLocal(
   JsonDocType globalEnv, JsonObjType inlineEnv)
 {
   return {
@@ -51,6 +52,18 @@ CmdEnvironment defaultLocal(
     std::move(inlineEnv)
   };
 }
+
+
+
+CmdEnvironment CmdEnvironment::fromInline(JsonObjType inlineEnv)
+{
+  return {
+    JsonDocType{rapidjson::kObjectType},
+    JsonDocType{rapidjson::kObjectType},
+    std::move(inlineEnv)
+  };
+}
+
 
 
 JsonObjType const * CmdEnvironment::getVar(std::string const & name) const
@@ -111,9 +124,9 @@ JsonObjType const * CmdEnvironment::getVar(
 
 
 
-void CmdEnvironment::setLocalEnv(JsonDocType globalEnv)
+void CmdEnvironment::setLocalEnv(JsonDocType localEnv)
 {
-  globalEnv_ = std::move(globalEnv);
+  localEnv_ = std::move(localEnv);
 }
 
 
@@ -142,8 +155,8 @@ void CmdEnvironment::insertGlobalDefaults(JsonDocType & globalEnv)
 
   insertDefault(
     globalEnv,
-    JsonObjType {"searchForLocalVar"},
-    JsonObjType {searchForLocalVar});
+    JsonObjType {"searchForLocalEnv"},
+    JsonObjType {searchForLocalEnv});
   insertDefault(
     globalEnv,
     JsonObjType {"envDirRelativeToInput"},

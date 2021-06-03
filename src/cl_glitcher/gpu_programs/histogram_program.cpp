@@ -25,14 +25,14 @@ HistogramProgram::HistogramProgram(gpu_util::GpuHandle const & gpuHandle) :
 
 
 
-HistogramProgram::ResultArr HistogramProgram::execute(
+HistogramArray HistogramProgram::execute(
   gpu_util::GpuHandle const & gpuHandle,
   unsigned char const * img,
   int imgSize) const
 {
   using namespace gpu_util;
 
-  ResultArr res {};
+  HistogramArray res {};
 
   cl::CommandQueue queue(gpuHandle.context, gpuHandle.device);
 
@@ -73,7 +73,7 @@ gpu_util::BufferWrapper HistogramProgram::execute(
   using namespace gpu_util;
 
   BufferWrapper bwRes {
-    gpuHandle, CL_MEM_READ_WRITE, resultBytes()
+    gpuHandle, CL_MEM_READ_WRITE, histogramArraySizeBytes()
   };
 
   execute(queue, gpuHandle, img, imgSize, bwRes);
@@ -92,7 +92,7 @@ gpu_util::BufferWrapper HistogramProgram::execute(
   using namespace gpu_util;
 
   BufferWrapper bwRes {
-    gpuHandle, CL_MEM_READ_WRITE, resultBytes()
+    gpuHandle, CL_MEM_READ_WRITE, histogramArraySizeBytes()
   };
 
   execute(queue, gpuHandle, img, imgSize, bwRes);
