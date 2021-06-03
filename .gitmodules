@@ -6,4 +6,4 @@
 	url = https://github.com/Tencent/rapidjson
 [submodule "vendor/dynalo"]
 	path = vendor/dynalo
-	url = https://github.com/maddouri/dynalo
+	url = https://github.com/bridgerrholt/dynalo
