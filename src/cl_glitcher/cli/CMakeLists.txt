@@ -4,4 +4,4 @@ target_include_directories(cl_glitcher_cli PUBLIC
         ${ROOT_INCLUDE_DIR}
         ${RAPIDJSON_INCLUDE_DIR}
         ${CLI11_INCLUDE_DIR})
-target_link_libraries(cl_glitcher_cli PUBLIC cmd_execution)
+target_link_libraries(cl_glitcher_cli PUBLIC cl_glitcher_cmd_execution)
