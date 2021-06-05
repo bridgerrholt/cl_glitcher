@@ -1,6 +1,7 @@
 # CL Glitcher
-![A butterfly (Aglais urticae)](docs/aglais-urticae.png)
-![A butterfly (Aglais urticae) after image processing](docs/aglais-urticae-cmd1.png)
+| Original image                                           | CL Glitched image                                                                    |
+|----------------------------------------------------------|--------------------------------------------------------------------------------------|
+| ![A butterfly (Aglais urticae)](docs/aglais-urticae.png) | ![A butterfly (Aglais urticae) after image processing](docs/aglais-urticae-cmd1.png) |
 
 ## Installation
 ### Clone and submodules
