@@ -10,15 +10,10 @@
 #include <rapidjson/document.h>
 #include <vector>
 
+#include "json_option.h"
 
 namespace json_util
 {
-
-enum class JsonOption
-{
-    None = 0,
-    Optional = 1
-};
 
 /// Used for storing JSON metadata
 /// \tparam Owner The owner of the variable in question
@@ -42,7 +37,54 @@ class JsonProperty
 
 
 
-/// Convenient wrapper for template deduction
+/// Used for storing JSON metadata
+/// \tparam Owner The owner of the variable in question
+/// \tparam T The type of variable in question
+template <
+  class Owner, class T, class Func, JsonOption Options = JsonOption::None>
+class JsonPropertyCustom
+{
+  public:
+    using Type = T;
+
+    /// Pointer to the variable
+    T Owner::*member;
+
+    /// Name of the variable for JSON serialization and deserialization
+    char const * name;
+
+    Func f;
+
+    constexpr JsonPropertyCustom(T Owner::*member, char const * name, Func f) :
+      member {member},
+      name {name},
+      f {f} {}
+
+    void execute(Owner & obj, rapidjson::Value const & value) const {
+      f(obj, obj.*(member), value);
+    }
+
+    /*void execute(Owner & obj, rapidjson::Value const & value) {
+      execute(f, obj, value);
+    }
+
+  private:
+    template <class F>
+    void execute(F const & func, Owner & obj, rapidjson::Value const & value)
+    {
+      func(obj, obj.*(member), value);
+    }
+
+    template <class F>
+    void execute(F Owner::* const & func, Owner & obj, rapidjson::Value const & value)
+    {
+      obj.*func(obj.*member, value);
+    }*/
+};
+
+
+/// Alternate syntax constructor for JsonProperty.
+/// Only for non-optional properties. See makeOptionalProp below.
 template <class Owner, class T>
 constexpr JsonProperty<Owner, T, JsonOption::None>
 makeProp(T Owner::*member, char const * name)
@@ -50,6 +92,10 @@ makeProp(T Owner::*member, char const * name)
   return {member, name};
 }
 
+
+
+/// Alternate syntax constructor for JsonProperty.
+/// Only for optional properties. See makeProp above.
 template <class Owner, class T>
 constexpr JsonProperty<Owner, T, JsonOption::Optional>
 makeOptionalProp(T Owner::*member, char const * name)
@@ -58,14 +104,68 @@ makeOptionalProp(T Owner::*member, char const * name)
 }
 
 
+/// Alternate syntax constructor for JsonProperty.
+/// Only for non-optional properties. See makeOptionalProp below.
+template <class Owner, class T, class Func>
+constexpr JsonPropertyCustom<Owner, T, Func, JsonOption::None>
+makeCustomProp(T Owner::*member, char const * name, Func f)
+{
+  return {member, name, f};
+}
+
+
+
+/// Alternate syntax constructor for JsonProperty.
+/// Only for optional properties. See makeProp above.
+template <class Owner, class T, class Func>
+constexpr JsonPropertyCustom<Owner, T, Func, JsonOption::Optional>
+makeCustomOptionalProp(T Owner::*member, char const * name, Func f)
+{
+  return {member, name, f};
+}
+
+
+/*/// Alternate syntax constructor for JsonProperty.
+/// Only for non-optional properties. See makeOptionalProp below.
+template <class Owner, class T, class Func Owner::*>
+constexpr JsonPropertyCustom<Owner, T, Func Owner::*, JsonOption::None>
+makeCustomProp(T Owner::*member, char const * name, Func Owner::*f)
+{
+  return {member, name, f};
+}
+
+
+
+/// Alternate syntax constructor for JsonProperty.
+/// Only for optional properties. See makeProp above.
+template <class Owner, class T, class Func>
+constexpr JsonPropertyCustom<Owner, T, Func Owner::*, JsonOption::Optional>
+makeCustomOptionalProp(T Owner::*member, char const * name, Func Owner::*f)
+{
+  return {member, name, f};
+}*/
+
+
+
 /// Convenient macro for when the member variable has the same name as the JSON
 /// property.
 #define JSON_UTIL_MAKE_PROP(owner, name) \
   (json_util::makeProp(&owner::name, #name))
+
+
+
 #define JSON_UTIL_MAKE_OPTIONAL_PROP(owner, name) \
   (json_util::makeOptionalProp(&owner::name, #name))
 
 
+#define JSON_UTIL_MAKE_CUSTOM_PROP(owner, name, func) \
+  (json_util::makeCustomProp(&owner::name, #name, func))
+
+#define JSON_UTIL_MAKE_CUSTOM_OPTIONAL_PROP(owner, name, func) \
+  (json_util::makeCustomOptionalProp(&owner::name, #name, func))
+
+
+// --- verifyPropList ---
 
 /// Used for ensuring an arg list contains only JsonProperty objects.
 template <class Owner, class T, JsonOption Options>
@@ -74,6 +174,8 @@ verifyPropList(JsonProperty<Owner, T, Options> const & first)
 {
 
 }
+
+
 
 template <class Owner, class T, JsonOption Options, class ... ArgPack>
 constexpr void
@@ -85,12 +187,16 @@ verifyPropList(
 
 
 
+// --- propList ---
+
 /// Convenient function for creating correct JsonProperty tuples.
+/// All arguments must be JsonProperty objects.
+/// @return A tuple of the JsonProperty objects
 template <class Owner, class T, JsonOption Options, class ... ArgPack>
 constexpr std::tuple<JsonProperty<Owner, T, Options>, ArgPack...>
 propList(JsonProperty<Owner, T, Options> && first, ArgPack && ... args)
 {
-  verifyPropList(first, std::forward<ArgPack>(args)...);
+  //verifyPropList(first, std::forward<ArgPack>(args)...);
   return {first, std::forward<ArgPack>(args)...};
 }
 
@@ -117,6 +223,8 @@ void deserialize2(
 #define __JSON_UTIL_PROP_MEMBER(obj, prop)\
   ((obj).*((prop).member))
 
+
+
 /// Deserialization
 template <class GenericJson, class Owner, class T, JsonOption options>
 void deserialize(
@@ -124,7 +232,38 @@ void deserialize(
   Owner & obj,
   JsonProperty<Owner, T, options> const & prop);
 
-// object
+
+/// Deserialize using custom func
+template <class GenericJson, class Owner, class T, class Func>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonPropertyCustom<Owner, T, Func> const & prop)
+{
+  prop.execute(obj, json[prop.name]);
+  //prop.f(obj, obj.*(prop.member), json[prop.name]);
+}
+
+
+
+template <class GenericJson, class Owner, class T, class Func>
+void deserialize(
+  GenericJson const & json,
+  Owner & obj,
+  JsonPropertyCustom<Owner, T, Func, JsonOption::Optional> const & prop)
+{
+  auto it = json.FindMember(prop.name);
+  if (it != json.MemberEnd())
+  {
+    prop.execute(obj, it->value);
+    //prop.f(obj, obj.*(prop.member), it->value);
+  }
+}
+
+
+
+
+/// Deserialize into JSON object (recurse)
 template <class GenericJson, class Owner, class T>
 void deserialize(
   GenericJson const & json,
@@ -431,6 +570,15 @@ void deserialize(
 }
 
 
+template <class Owner, class GenericJson>
+Owner deserialize(
+  GenericJson const & json)
+{
+  Owner o;
+  deserialize(json, o);
+  return o;
+}
+
 
 template <class GenericJson, class Owner>
 void deserialize(
@@ -448,6 +596,8 @@ void deserialize2(
 }
 
 
+
+/// Deserialize all elements of the props tuple starting from the given index.
 template <std::size_t index, class GenericJson, class Owner, class Tuple>
 void deserialize(
   GenericJson const & json,

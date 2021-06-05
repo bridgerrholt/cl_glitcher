@@ -24,4 +24,6 @@ target_link_libraries(cl_glitcher_mod_histogram_shift PUBLIC
         cl_glitcher_gpu_util
         json_util
         cl_glitcher_image_util
-        cl_glitcher_gpu_programs)
+        cl_glitcher_gpu_programs
+        cl_glitcher_mod_environment
+        cl_glitcher_cmd_execution)

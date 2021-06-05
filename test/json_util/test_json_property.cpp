@@ -27,6 +27,19 @@ class Obj
     }
 };
 
+/// Given an array of the following form [int, float, string],
+/// multiply int and float by 10, add "0" to string.
+template <class Owner>
+static void deserializeCustomObj(
+  Owner & owner, Obj & obj, rapidjson::Value const & json)
+{
+  obj = {
+    json[0].GetInt() * 10,
+    json[1].GetFloat() * 10.0f,
+    std::string(json[2].GetString()) + "0"
+  };
+}
+
 class Owner
 {
   public:
@@ -42,8 +55,9 @@ class Owner
     std::vector<int> arrayTest;
     std::vector<Obj> arrayOfObjTest;
     Obj objTest;
+    Obj customObjTest;
 
-    static constexpr auto jsonProps = propList(
+    static constexpr auto jsonProps = std::make_tuple(
       JSON_UTIL_MAKE_PROP(Owner, boolTestT),
       JSON_UTIL_MAKE_PROP(Owner, boolTestF),
       JSON_UTIL_MAKE_PROP(Owner, intTest),
@@ -55,7 +69,8 @@ class Owner
       JSON_UTIL_MAKE_PROP(Owner, stringTest),
       JSON_UTIL_MAKE_PROP(Owner, arrayTest),
       JSON_UTIL_MAKE_PROP(Owner, arrayOfObjTest),
-      JSON_UTIL_MAKE_PROP(Owner, objTest)
+      JSON_UTIL_MAKE_PROP(Owner, objTest),
+      JSON_UTIL_MAKE_CUSTOM_PROP(Owner, customObjTest, deserializeCustomObj<Owner>)
     );
 
     bool operator==(Owner const & other) const
@@ -72,7 +87,8 @@ class Owner
         stringTest == other.stringTest &&
         arrayTest == other.arrayTest &&
         arrayOfObjTest == other.arrayOfObjTest &&
-        objTest == other.objTest;
+        objTest == other.objTest &&
+        customObjTest == other.customObjTest;
     }
 };
 
@@ -91,6 +107,7 @@ class OwnerAllOptional
     double doubleTest {10.25};
     std::string stringTest {"default"};
     Obj objTest;
+    Obj customObjTest;
 
     static constexpr auto jsonProps = propList(
       JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, boolTestT),
@@ -102,7 +119,11 @@ class OwnerAllOptional
       JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, floatTest),
       JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, doubleTest),
       JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, stringTest),
-      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, objTest)
+      JSON_UTIL_MAKE_OPTIONAL_PROP(OwnerAllOptional, objTest),
+      JSON_UTIL_MAKE_CUSTOM_OPTIONAL_PROP(
+        OwnerAllOptional,
+        customObjTest,
+        deserializeCustomObj<OwnerAllOptional>)
     );
 
     bool operator==(OwnerAllOptional const & other) const
@@ -117,7 +138,8 @@ class OwnerAllOptional
           floatTest == other.floatTest &&
           doubleTest == other.doubleTest &&
           stringTest == other.stringTest &&
-          objTest == other.objTest;
+          objTest == other.objTest &&
+          customObjTest == other.customObjTest;
     }
 };
 
@@ -150,7 +172,8 @@ Document fullDoc()
       "objIntTest": 100,
       "objFloatTest": 10.5,
       "objStringTest": "test"
-    }
+    },
+    "customObjTest": [100, 10.5, "test"]
   })";
 
   Document d;
@@ -188,11 +211,14 @@ TEST(TestJsonUtil, DeserializeAllNoOptional)
     "test string",
     { 10, 20 },
     {
-      Obj { 1, 1.5, "test1"},
-      Obj { 2, 2.5, "test2"}
+      Obj { 1, 1.5f, "test1"},
+      Obj { 2, 2.5f, "test2"}
     },
     {
-      100, 10.5, "test"
+      100, 10.5f, "test"
+    },
+    {
+      1000, 105.0f, "test0"
     }
   };
 
