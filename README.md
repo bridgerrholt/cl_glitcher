@@ -1,4 +1,7 @@
 # CL Glitcher
+## Introduction
+CL Glitcher is a C++ application for creating [*glitch art*](https://en.wikipedia.org/wiki/Glitch_art). It's name is based on the framework it uses for GPU processing: OpenCL.
+
 | Original image                                           | CL Glitched image                                                                    |
 |----------------------------------------------------------|--------------------------------------------------------------------------------------|
 | ![A butterfly (Aglais urticae)](docs/aglais-urticae.png) | ![A butterfly (Aglais urticae) after image processing](docs/aglais-urticae-cmd1.png) |
@@ -29,3 +32,10 @@ git pull origin master
 
 ### CLI11
 To use the CLI functionality, you must download [CLI11](https://github.com/CLIUtils/CLI11) and set the CMake variable `CLI11_INCLUDE_DIR` to the `include` directory of CLI11.
+
+
+## Examples
+The `examples` directory contains an example called `example-directory-structure`. It is recommended that you copy the contents of this directory to your own *glitch art* directory. To execute the example, make `examples/example-directory-structure` your working directory. Then, execute
+```shell script
+clglitch -E global_env.json -C aglais_urticae/aglais_urticae_00/aglais_urticae_00.json
+```
