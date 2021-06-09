@@ -1,6 +1,6 @@
 # CL Glitcher
 ## Introduction
-CL Glitcher is a C++ application for creating [*glitch art*](https://en.wikipedia.org/wiki/Glitch_art). It's name is based on the framework it uses for GPU processing: OpenCL.
+CL Glitcher is a C++ application for creating [*glitch art*](https://en.wikipedia.org/wiki/Glitch_art). Its name is based on the framework it uses for GPU processing: OpenCL.
 
 | Original image                                           | CL Glitched image                                                                    |
 |----------------------------------------------------------|--------------------------------------------------------------------------------------|
