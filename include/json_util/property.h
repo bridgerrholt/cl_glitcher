@@ -147,6 +147,12 @@ makeCustomOptionalProp(T Owner::*member, char const * name, Func Owner::*f)
 
 
 
+#define JSON_UTIL_DECLARE_PROP_LIST(...) \
+  static constexpr auto jsonProps = std::make_tuple( \
+    __VA_ARGS__ \
+  );
+
+
 /// Convenient macro for when the member variable has the same name as the JSON
 /// property.
 #define JSON_UTIL_MAKE_PROP(owner, name) \

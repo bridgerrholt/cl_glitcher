@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include <cli/cli.h>
-#include <cli/execute_cli.h>
+#include <cmd_execution/cmd_execution.h>
 
 int main(int argc, char * argv[])
 {
@@ -12,7 +12,7 @@ int main(int argc, char * argv[])
 
   if (code == 0)
   {
-    executeCli(res);
+    CmdExecution::loadAndExecute(res);
   }
 
   return code;

@@ -7,82 +7,18 @@
 
 #include <rapidjson/document.h>
 
+#include <json_defs/line_series.h>
 #include <json_util/property.h>
 #include <mod_sys/static_mod_data.h>
 
 namespace clglitch::histogram_shift
 {
 
-class ValueTimePair
-{
-  public:
-    unsigned value;
-    float time;
-
-    static constexpr auto jsonProps = std::make_tuple(
-      JSON_UTIL_MAKE_PROP(ValueTimePair, value),
-      JSON_UTIL_MAKE_PROP(ValueTimePair, time)
-    );
-
-    constexpr ValueTimePair(unsigned num, float time) :
-      value {num}, time {time} {}
-
-    constexpr bool operator==(ValueTimePair const & other) const
-    {
-      return value == other.value && time == other.time;
-    }
-};
-
-
-
-class LineSegment
-{
-  private:
-    static void deserializeFrames(
-      LineSegment & owner,
-      std::vector<ValueTimePair> & frames,
-      rapidjson::Value const & value);
-
-    static void deserializeFramesFromValueArr(
-      std::vector<ValueTimePair> & frames,
-      rapidjson::Value::ConstArray::ValueIterator arrayBegin,
-      rapidjson::SizeType arraySize);
-
-    static void deserializeFramesFromFrameArr(
-      std::vector<ValueTimePair> & frames,
-      rapidjson::Value::ConstArray const & jsonArray);
-
-    void deserializeFromValueArr(
-      rapidjson::Value::ConstArray const & jsonArray);
-
-  public:
-    unsigned initial;
-    std::vector<ValueTimePair> frames;
-
-    static constexpr auto jsonProps = std::make_tuple(
-      JSON_UTIL_MAKE_PROP(LineSegment, initial),
-      JSON_UTIL_MAKE_CUSTOM_PROP(LineSegment, frames, deserializeFrames)
-    );
-
-    constexpr bool operator==(LineSegment const & other) const
-    {
-      return initial == other.initial && frames == other.frames;
-    }
-
-    /// Serialize from multiple possible JSON types ("formats" of the object).
-    static LineSegment multiFormatDeserialize(rapidjson::Value const & value);
-
-    /*static LineSegment deserializeFromValueArr(
-      rapidjson::Value::ConstArray const & jsonArray);*/
-};
-
-
-
 class IncMinIncMaxPair
 {
   public:
-    LineSegment incMin;
-    LineSegment incMax;
+    LineSeries<unsigned> incMin;
+    LineSeries<unsigned> incMax;
 };
 
 
@@ -92,14 +28,14 @@ class HistogramShiftData
   private:
     static void deserializeLine(
       HistogramShiftData & owner,
-      LineSegment & line,
+      LineSeries<unsigned> & line,
       rapidjson::Value const & value);
 
 
   public:
-    LineSegment incMin;
-    LineSegment incMax;
-    float incFactor;
+    LineSeries<unsigned> incMin;
+    LineSeries<unsigned> incMax;
+    LineSeries<float> incFactor;
 
     static constexpr auto jsonProps = std::make_tuple(
       JSON_UTIL_MAKE_PROP(HistogramShiftData, incFactor),
@@ -128,7 +64,7 @@ class HistogramShiftData
     );*/
 
   private:
-    bool channelsDefined {0};
+    bool channelsDefined {false};
 };
 
 

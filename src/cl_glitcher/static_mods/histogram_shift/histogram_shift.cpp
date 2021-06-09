@@ -74,19 +74,6 @@ std::string getExt(CmdEnvironment const & cmdEnv)
 
 
 
-unsigned verifyNumber(rapidjson::Value const & value)
-{
-  std::cout << value.GetUint() << '\n';
-  return value.GetUint();
-}
-
-
-
-float verifyTime(rapidjson::Value const & value)
-{
-  return value.GetFloat();
-}
-
 
 
 /*template <class JsonArray>
@@ -110,11 +97,13 @@ LineSegment deserializeArrayOfNumTimes(
   }
 }*/
 
-std::vector<unsigned> lineSegmentToValueArray(
-  LineSegment const & line,
-  unsigned imageCount)
+template <class Value, class Func>
+std::vector<Value> lineSegmentToValueArrayImpl(
+  LineSeries<Value> const & line,
+  unsigned imageCount,
+  Func && valueTransform)
 {
-  std::vector<unsigned> res;
+  std::vector<Value> res;
   res.resize(imageCount);
 
   /*float timeSum = std::accumulate(
@@ -133,7 +122,7 @@ std::vector<unsigned> lineSegmentToValueArray(
     float tStep = 1.0f / (float)(imageCount - 1);
     float t {0};
     float currentTotalT {0};
-    unsigned lastValue {line.initial};
+    Value lastValue {line.initial};
 
     for (auto const & v : line.frames) {
       while (t < currentTotalT + v.time && i < imageCount) {
@@ -141,7 +130,7 @@ std::vector<unsigned> lineSegmentToValueArray(
         float valueFactor = (float)v.value - (float)lastValue;
         float rawValue = (float)lastValue + timeFactor * valueFactor;
 
-        res[i] = (unsigned)std::max(0.0f, rawValue);
+        res[i] = valueTransform(rawValue);
 
         i += 1;
         t += tStep;
@@ -155,140 +144,46 @@ std::vector<unsigned> lineSegmentToValueArray(
   return res;
 }
 
-}
 
 
-void LineSegment::deserializeFrames(
-  LineSegment & owner,
-  std::vector<ValueTimePair> & frames,
-  rapidjson::Value const & value)
+template <class Value>
+std::vector<Value> lineSegmentToValueArray(
+  LineSeries<Value> const & line,
+  unsigned imageCount)
 {
-  auto const & arr = value.GetArray();
-
-  if (!arr.Empty()) {
-    if (arr[0].IsNumber()) {
-      deserializeFramesFromValueArr(frames, arr.begin(), arr.Size());
+  return lineSegmentToValueArrayImpl(
+    line, imageCount,
+    [](float val) {
+      return (Value)val;
     }
-    else if (arr[0].IsArray()) {
-      deserializeFramesFromFrameArr(frames, arr);
-    }
-    else {
-      throw std::runtime_error("Invalid element data type of NumTimeArray");
-    }
-  }
-  else {
-    throw std::runtime_error("NumTimeArray must not be empty");
-  }
+  );
 }
 
 
 
-void LineSegment::deserializeFramesFromValueArr(
-  std::vector<ValueTimePair> & frames,
-  rapidjson::Value::ConstArray::ValueIterator arrayBegin,
-  rapidjson::SizeType arraySize)
+template <>
+std::vector<unsigned> lineSegmentToValueArray(
+  LineSeries<unsigned> const & line,
+  unsigned imageCount)
 {
-  if (arraySize > 0) {
-    frames.reserve(arraySize);
-    float t {1.0f / (float)arraySize};
-    for (std::size_t i {0}; i < arraySize; i++) {
-      auto const & v = arrayBegin[i];
-      if (v.IsUint()) {
-        frames.emplace_back(v.GetUint(), t);
-      }
-      else {
-        throw std::runtime_error(
-          "All elements of LineSegment frame arrays must be the same type.");
-      }
+  return lineSegmentToValueArrayImpl(
+    line, imageCount,
+    [](float val) {
+      return (unsigned)std::max(0.0f, val);
     }
-  }
+  );
 }
 
-
-void LineSegment::deserializeFramesFromFrameArr(
-  std::vector<ValueTimePair> & frames,
-  rapidjson::Value::ConstArray const & jsonArray)
-{
-  for (auto const & v : jsonArray) {
-    if (v.IsArray()) {
-      if (v.Size() == 2) {
-        frames.emplace_back(verifyNumber(v[0]), verifyTime(v[1]));
-      }
-      else {
-        throw std::runtime_error("Elements of frame arrays must have a size of 2.");
-      }
-    }
-    else {
-      throw std::runtime_error(
-        "All elements of LineSegment frame arrays must be the same type.");
-    }
-  }
-}
-
-
-
-
-LineSegment LineSegment::multiFormatDeserialize(
-  rapidjson::Value const & value)
-{
-  if (value.IsNumber()) {
-    return {verifyNumber(value), {}};
-  }
-  else if (value.IsArray()) {
-    LineSegment line;
-    line.deserializeFromValueArr(value.GetArray());
-    return line;
-
-    /*auto const & arr = value.GetArray();
-
-    if (!arr.Empty()) {
-      if (arr[0].IsNumber()) {
-        return deserializeArrayOfNums(arr);
-      }
-      else if (arr[0].IsArray()) {
-        return deserializeArrayOfNumTimes(arr);
-      }
-      else {
-        throw std::runtime_error("Invalid element data type of NumTimeArray");
-      }
-    }
-    else {
-      throw std::runtime_error("NumTimeArray must not be empty");
-    }*/
-  }
-  else if (value.IsObject()) {
-    return json_util::deserialize<LineSegment>(value);
-  }
-  else {
-    throw std::runtime_error("Invalid data type for NumTimeArray");
-  }
-}
-
-
-
-void LineSegment::deserializeFromValueArr(
-  rapidjson::Value::ConstArray const & jsonArray)
-{
-  auto s = jsonArray.Size();
-
-  if (s > 0) {
-    initial = verifyNumber(jsonArray[0]);
-    deserializeFramesFromValueArr(frames, jsonArray.begin() + 1, s - 1);
-  }
-  else {
-    throw std::runtime_error(
-      "Value array used to initialize LineSegment must not be empty.");
-  }
 }
 
 
 
 void HistogramShiftData::deserializeLine(
   HistogramShiftData & owner,
-  LineSegment & line,
+  LineSeries<unsigned> & line,
   rapidjson::Value const & value)
 {
-  line = LineSegment::multiFormatDeserialize(value);
+  line = LineSeries<unsigned>::multiFormatDeserialize(value);
 }
 
 
@@ -334,8 +229,10 @@ void jsonObjExecute(JsonObjExecuteParams const & params)
 
   auto const & path = params.systemEnv.cmdFilePath();
 
-  auto incMinArr = lineSegmentToValueArray(data.incMin, imageCountField->GetUint());
-  auto incMaxArr = lineSegmentToValueArray(data.incMax, imageCountField->GetUint());
+  unsigned imageCount {imageCountField->GetUint()};
+  auto incMinArr = lineSegmentToValueArray(data.incMin, imageCount);
+  auto incMaxArr = lineSegmentToValueArray(data.incMax, imageCount);
+  auto incFactorArr = lineSegmentToValueArray(data.incFactor, imageCount);
 
   unsigned i {0};
   imageNameLoop(
@@ -343,7 +240,7 @@ void jsonObjExecute(JsonObjExecuteParams const & params)
     ext,
     imageCountField->GetUint(),
     [&](std::string const & outputFilename) {
-      std::cout << incMinArr[i] << " " << incMaxArr[i] << "\n";
+      std::cout << incMinArr[i] << " " << incMaxArr[i] << "  | " << incFactorArr[i] << "\n";
 
       HistogramShiftProgram program {params.gpuHandle};
       program.execute(
@@ -355,7 +252,7 @@ void jsonObjExecute(JsonObjExecuteParams const & params)
         histIndicesBuffer,
         incMinArr[i],
         incMaxArr[i],
-        data.incFactor);
+        incFactorArr[i]);
 
 
 

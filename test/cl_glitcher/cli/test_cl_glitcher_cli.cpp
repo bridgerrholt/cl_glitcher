@@ -5,7 +5,7 @@
 using namespace clglitch;
 
 
-TEST(TestClGlitcherCli, RunJson)
+TEST(TestClGlitcherCli, Cmd)
 {
   char const * strArr[] {"cl_glitch", "--cmd", "filename.json"};
   auto [res, code] = cli(3, strArr);
@@ -19,7 +19,7 @@ TEST(TestClGlitcherCli, RunJson)
 
 
 
-TEST(TestClGlitcherCli, J)
+TEST(TestClGlitcherCli, C)
 {
   char const * strArr[] {"cl_glitch", "-C", "filename.json"};
   auto [res, code] = cli(3, strArr);

@@ -59,12 +59,18 @@ void maybeLoadLocalEnv(
     auto const & envDirRelativeToInput =
       env.getVar("envDirRelativeToInput");
 
-    if (
-      envDirRelativeToInput->GetString()[0] == '.' &&
-      envDirRelativeToInput->GetStringLength() == 0)
+    char const * envDirRelativeToInputStr {
+      envDirRelativeToInput->GetString()
+    };
+
+    auto strLength = envDirRelativeToInput->GetStringLength();
+    bool isDot = strLength == 1 && envDirRelativeToInputStr[0] == '.';
+
+    // If the string is empty or ".", disregard it.
+    if (strLength != 0 && !isDot)
     {
       commandFileDirectory += "/";
-      commandFileDirectory += env.getVar("envDirRelativeToInput")->GetString();
+      commandFileDirectory += envDirRelativeToInput->GetString();
     }
 
     commandFileDirectory += "/";
