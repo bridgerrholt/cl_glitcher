@@ -1,0 +1,17 @@
+{
+  "cmd": "Histogram Shift",
+  "data": {
+    "incMin": {
+    	"initial": 0,
+    	"frames": [[10, 0.1], [30, 0], [80, 0.9]]
+    },
+    "incMax": {
+    	"initial": 1,
+    	"frames": [[11, 0.1], [31, 0], [101, 0.9]]
+    },
+    "incFactor": {
+    	"initial": 0.3,
+    	"frames": [[0.1, 0.2], [0.02, 0.8]]
+    }
+  }
+}
