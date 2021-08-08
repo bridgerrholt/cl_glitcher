@@ -74,6 +74,10 @@ set_target_properties(cl_glitcher_bin
     PROPERTIES OUTPUT_NAME cl_glitcher) # Rename output binary to cl_glitcher
 add_subdirectory(src/cl_glitcher)
 
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+elseif(CMAKE_BUILD_TYPE MATCHES Release)
+    target_compile_options(cl_glitcher_bin PUBLIC -O3)
+endif ()
 
 
 ### json_util ###

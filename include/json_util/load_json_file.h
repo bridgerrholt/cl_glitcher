@@ -9,8 +9,16 @@
 
 #include <rapidjson/document.h>
 
+#include <file_read_stream.h>
+
 namespace json_util
 {
+
+struct DocumentStreamPair
+{
+  rapidjson::Document document;
+  FileReadStream stream;
+};
 
 rapidjson::Document loadJsonFile(std::string const & filename);
 

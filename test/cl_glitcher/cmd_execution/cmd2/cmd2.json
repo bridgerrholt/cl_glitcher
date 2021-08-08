@@ -1,0 +1,12 @@
+{
+  "cmd": "Mandelbrot Shift",
+  "data": {
+    "incFactor": 0.311117
+  },
+  "env": {
+    "searchForLocalEnv": false,
+    "inputImage": "../cmd1/aglais_urticae.png",
+    "outputExtension": "png",
+    "imageCount": 101
+  }
+}
