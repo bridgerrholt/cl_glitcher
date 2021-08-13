@@ -103,15 +103,15 @@ endif()
 
 
 ### Graph generation
-if (NOT DEFINED CL_GLITCHER_NO_GRAPH)
-    message(${CMAKE_COMMAND})
-    message(${CMAKE_BINARY_DIR})
-    add_custom_target(cl_glitcher_graphviz ALL
-            COMMAND ${CMAKE_COMMAND} "--graphviz=graphviz/cl_glitcher_graphviz.dot" .
-            COMMAND dot -Tpng cl_glitcher_graphviz.dot -o cl_glitcher_graphviz.png
-            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-            )
-endif()
+#if (NOT DEFINED CL_GLITCHER_NO_GRAPH)
+#    message(${CMAKE_COMMAND})
+#    message(${CMAKE_BINARY_DIR})
+#    add_custom_target(cl_glitcher_graphviz ALL
+#            COMMAND ${CMAKE_COMMAND} "--graphviz=graphviz/cl_glitcher_graphviz.dot" .
+#            COMMAND dot -Tpng cl_glitcher_graphviz.dot -o cl_glitcher_graphviz.png
+#            WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+#            )
+#endif()
 #if(DEFINED CL_GLITCHER_GRAPH)
 #    set(GRAPHVIZ_GRAPH_NAME "cl_glitcher_graph")
     #set(GRAPHVIZ_CUSTOM_TARGETS TRUE)

@@ -7,6 +7,29 @@ float2 f(float2 c, float2 z)
 }
 
 
+// v: vector on [0, 1]^2
+float2 normalizeToBulb(float2 v)
+{
+  // adjust to [-1, 1]^2
+  v.x = -1.0f + 2.0f * v.x;
+  v.y = -1.0f + 2.0f * v.y;
+
+  // initial length
+  float l1 = length(v);
+
+  // new length
+  float l2 = 0.25f;
+
+  if (l1 != 0.0f) {
+    v.x = v.x * l2 / l1;
+    v.y = v.y * l2 / l1;
+  }
+
+  v.x += 1;
+
+  return v;
+}
+
 
 float shift(
   global unsigned char * colorX,
@@ -14,9 +37,14 @@ float shift(
   float incFactor,
   int steps)
 {
-  float2 posStart;
-  posStart.x = -2.0f + 3.0f * ((float)*colorX / 255.0f);
-  posStart.y = -1.0f + 2.0f * ((float)*colorY / 255.0f);
+  float2 posStart = normalizeToBulb(
+    (float2)(
+      (float)*colorX / 255.0f,
+      (float)*colorY / 255.0f
+    )
+  );
+  //posStart.x = -2.0f + 3.0f * ((float)*colorX / 255.0f);
+  //posStart.y = -1.0f + 2.0f * ((float)*colorY / 255.0f);
   float2 pos = (float2)(0);
   int j;
   for (j = 0; j < steps; j++) {
