@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
-project(CL_Glitcher)
-
+project(CL_Glitcher VERSION 0.0.0.1)
 set(CMAKE_CXX_STANDARD 17)
 
 include(cmake/stringify_to_header.cmake)
+include(cmake/generate_version_info.cmake)
 
 ### OpenCV ###
 # D:/Bridger/Documents/Programming/_Libs/opencv-3.4.2/bin-msys2/install/x64/mingw/lib OR
@@ -14,11 +14,21 @@ set(OPENCV_LIB_DIR "" CACHE PATH "Directory of OpenCV library files")
 # D:\Programs\msys64\mingw64\include\opencv4
 set(OPENCV_INCLUDE_DIR "" CACHE PATH "Directory of OpenCV header files")
 
-find_library(CORE_LIB NAMES opencv_core PATHS ${OPENCV_LIB_DIR})
-find_library(IMG_PROC_LIB NAMES opencv_imgproc PATHS ${OPENCV_LIB_DIR})
-find_library(HIGH_GUI_LIB NAMES opencv_highgui PATHS ${OPENCV_LIB_DIR})
-#find_library(VIDEO_LIB NAMES opencv_video PATHS ${OPENCV_DIR})
-find_library(IMAGE_CODECS_LIB NAMES opencv_imgcodecs PATHS ${OPENCV_LIB_DIR})
+set(USE_OPENCV_WORLD 0 CACHE PATH "Whether or not to use opencv_world")
+
+if(USE_OPENCV_WORLD)
+    message(opencv_world)
+    find_library(OPENCV_LIBS NAMES opencv_world PATH ${OPENCV_LIB_DIR} )
+else()
+    find_library(CORE_LIB NAMES opencv_core PATHS ${OPENCV_LIB_DIR})
+    find_library(IMG_PROC_LIB NAMES opencv_imgproc PATHS ${OPENCV_LIB_DIR})
+    find_library(HIGH_GUI_LIB NAMES opencv_highgui PATHS ${OPENCV_LIB_DIR})
+    #find_library(VIDEO_LIB NAMES opencv_video PATHS ${OPENCV_DIR})
+    find_library(IMAGE_CODECS_LIB NAMES opencv_imgcodecs PATHS ${OPENCV_LIB_DIR})
+    set(OPENCV_LIBS ${CORE_LIB} ${IMG_PROC_LIB} ${HIGH_GUI_LIB} ${IMAGE_CODECS_LIB})
+endif()
+
+message(${OPENCV_LIBS})
 
 
 
@@ -67,7 +77,7 @@ target_include_directories(cl_glitcher_bin SYSTEM PUBLIC
         ${OPENCL_INCLUDE_DIR}
         ${CLI11_INCLUDE_DIR})
 target_link_libraries(cl_glitcher_bin PUBLIC
-        ${CORE_LIB} ${IMG_PROC_LIB} ${HIGH_GUI_LIB} ${IMAGE_CODECS_LIB}
+        ${OPENCV_LIBS}
         ${OPENCL_LIB}
         cl_glitcher_cli)
 set_target_properties(cl_glitcher_bin
@@ -79,6 +89,9 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
     target_compile_options(cl_glitcher_bin PUBLIC -O3)
 endif ()
 
+# target_compile_options(cl_glitcher_bin PUBLIC -static)
+
+cmd_generate_version_info(version_info version git_commit ${CL_GLITCHER_INCLUDE_DIR}/version_info/version_info.h cl_glitcher_bin)
 
 ### json_util ###
 add_subdirectory(src/json_util)
@@ -92,6 +105,11 @@ add_subdirectory(src/file_util)
 
 ### stringify_to_header ###
 add_subdirectory(src/stringify_to_header)
+
+
+
+### generate_version_info ###
+add_subdirectory(src/generate_version_info)
 
 
 

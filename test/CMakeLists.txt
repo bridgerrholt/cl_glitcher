@@ -7,6 +7,7 @@ add_subdirectory(cl_glitcher)
 add_subdirectory(file_util)
 add_subdirectory(json_util)
 add_subdirectory(stringify_to_header)
+add_subdirectory(generate_version_info)
 
 
 #get_target_property(test_cl_glitcher_sources test_cl_glitcher SOURCES)
