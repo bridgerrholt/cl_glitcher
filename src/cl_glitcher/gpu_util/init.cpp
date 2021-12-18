@@ -30,19 +30,26 @@ GpuHandle init()
   cl::Platform defaultPlatform = platforms[0];
 
   // get default device (CPUs, GPUs) of the default platform
-  std::vector<cl::Device> allDevices;
-  defaultPlatform.getDevices(CL_DEVICE_TYPE_ALL, &allDevices);
+	cl::Device device;
 
-  if (allDevices.empty())
-  {
-    throw std::runtime_error("No devices found. Check OpenCL installation!");
-  }
+  std::vector<cl::Device> gpuDevices;
+	defaultPlatform.getDevices(CL_DEVICE_TYPE_GPU, &gpuDevices);
+	if (gpuDevices.size() > 0)
+	{
+		device = gpuDevices[0];
+	}
+	else
+	{
+		std::vector<cl::Device> allDevices;
+		defaultPlatform.getDevices(CL_DEVICE_TYPE_ALL, &allDevices);
 
-  cl::Device device;
-  if (allDevices.size() == 1)
-    device = allDevices[0];
-  else
-    device = allDevices[1];
+		if (allDevices.empty())
+		{
+			throw std::runtime_error("No devices found. Check OpenCL installation!");
+		}
+
+		device = allDevices[0];
+	}
 
   // a context is like a "runtime link" to the device and platform;
   // i.e. communication is possible
