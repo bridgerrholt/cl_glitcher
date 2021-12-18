@@ -76,12 +76,14 @@ void CmdExecution::loadCmdEnv()
     cmdData.cmdEnv = loadModEnvironmentDefaultGlobal(
       std::move(cmdPath),
       std::move(inlineEnv));
+    //cmdData.cmdEnv.setAllocator(cmdData.cmd.GetAllocator());
   }
   else {
     cmdData.cmdEnv = loadModEnvironment(
       params.globalEnvironmentFilename,
       std::move(cmdPath),
       std::move(inlineEnv));
+    //cmdData.cmdEnv.setAllocator(cmdData.cmd.GetAllocator());
   }
 }
 

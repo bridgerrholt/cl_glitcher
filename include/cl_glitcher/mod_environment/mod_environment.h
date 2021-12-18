@@ -41,14 +41,21 @@ class CmdEnvironment
     JsonObjType const * getInlineVar(std::string const & name) const;
 
     void setLocalEnv(JsonDocType globalEnv);
+    /*void setAllocator(JsonDocType::AllocatorType & allocator);
+    JsonDocType::AllocatorType & getAllocator();*/
 
     bool operator==(CmdEnvironment const & other) const;
+
+#ifndef NDEBUG
+    void debugPrint() const;
+#endif
 
 
   private:
     JsonDocType globalEnv_;
     JsonDocType localEnv_;
     JsonObjType inlineEnv_;
+    JsonDocType::AllocatorType * inlineEnvAllocator_;
 
     static JsonObjType const * getVar(
       JsonObjType const & env,

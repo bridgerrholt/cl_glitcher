@@ -5,6 +5,12 @@
 #include <mod_environment/mod_environment.h>
 #include <mod_environment/environment_defaults.h>
 
+#ifndef NDEBUG
+#include <iostream>
+#include <json_util/json_to_string.h>
+#include <json_util/load_json_file.h>
+#endif
+
 namespace clglitch
 {
 
@@ -25,7 +31,8 @@ CmdEnvironment::CmdEnvironment(
   JsonObjType inlineEnv) :
   globalEnv_{std::move(globalEnv)},
   localEnv_{std::move(localEnv)},
-  inlineEnv_{std::move(inlineEnv)}
+  inlineEnv_{std::move(inlineEnv)},
+  inlineEnvAllocator_{nullptr}
 {
   insertGlobalDefaults(globalEnv_);
 }
@@ -175,6 +182,72 @@ JsonDocType CmdEnvironment::defaultGlobalEnv()
   insertGlobalDefaults(globalEnv);
   return globalEnv;
 }
+
+
+/*void CmdEnvironment::setAllocator(JsonDocType::AllocatorType & allocator)
+{
+  inlineEnvAllocator_ = &allocator;
+}
+JsonDocType::AllocatorType & CmdEnvironment::getAllocator()
+{
+  return *inlineEnvAllocator_;
+}*/
+
+
+#ifndef NDEBUG
+void CmdEnvironment::debugPrint() const
+{
+  using namespace json_util;
+  std::cout << "globalEnv:\n" << jsonToString(globalEnv_) << "\n\n";
+  std::cout << "localEnv:\n" << jsonToString(localEnv_) << "\n\n";
+  std::cout << "inlineEnv:\n" << jsonToString(inlineEnv_) << "\n\n";
+
+  JsonDocType ge;
+  ge.Parse(jsonToString(globalEnv_).c_str());
+  JsonDocType le;
+  le.Parse(jsonToString(localEnv_).c_str());
+  JsonDocType ie;
+  ie.Parse(jsonToString(inlineEnv_).c_str());
+
+  JsonDocType effectiveDoc;
+  effectiveDoc.SetObject();
+
+  for (auto const & kv : ie.GetObject())
+  {
+    JsonObjType t;
+    JsonObjType k;
+    k.CopyFrom(kv.name, le.GetAllocator());
+    effectiveDoc.AddMember(k, t, effectiveDoc.GetAllocator());
+    effectiveDoc[kv.name].CopyFrom(kv.value, ie.GetAllocator());
+  }
+
+  for (auto const & kv : le.GetObject())
+  {
+    if (!getVar(effectiveDoc, kv.name.GetString()))
+    {
+      JsonObjType t;
+      JsonObjType k;
+      k.CopyFrom(kv.name, le.GetAllocator());
+      effectiveDoc.AddMember(k, t, effectiveDoc.GetAllocator());
+      effectiveDoc[kv.name].CopyFrom(kv.value, le.GetAllocator());
+    }
+  }
+
+  for (auto const & kv : ge.GetObject())
+  {
+    if (!getVar(effectiveDoc, kv.name.GetString()))
+    {
+      JsonObjType t;
+      JsonObjType k;
+      k.CopyFrom(kv.name, le.GetAllocator());
+      effectiveDoc.AddMember(k, t, effectiveDoc.GetAllocator());
+      effectiveDoc[kv.name].CopyFrom(kv.value, ge.GetAllocator());
+    }
+  }
+
+  std::cout << "effectiveEnv:\n" << jsonToString(effectiveDoc) << '\n';
+}
+#endif
 
 
 
