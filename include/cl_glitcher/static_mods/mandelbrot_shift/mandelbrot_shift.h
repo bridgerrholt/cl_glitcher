@@ -21,9 +21,13 @@ class MandelbrotShiftData
   public:
     LineSeries<float> incFactor;
 
-    static constexpr auto jsonProps = std::make_tuple(
+    JSON_UTIL_DECLARE_PROP_LIST(
       JSON_UTIL_MAKE_PROP(MandelbrotShiftData, incFactor)
-    );
+    )
+
+		MandelbrotShiftData() = default;
+		explicit MandelbrotShiftData(LineSeries<float> incFactor) :
+			incFactor {std::move(incFactor)} {}
 
     bool operator==(MandelbrotShiftData const & other) const
     {

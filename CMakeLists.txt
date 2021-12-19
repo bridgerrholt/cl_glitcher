@@ -14,11 +14,16 @@ set(OPENCV_LIB_DIR "" CACHE PATH "Directory of OpenCV library files")
 # D:\Programs\msys64\mingw64\include\opencv4
 set(OPENCV_INCLUDE_DIR "" CACHE PATH "Directory of OpenCV header files")
 
+set(OPENCV_DLL_DIR "" CACHE PATH "Directory of OpenCV DLL files")
+
 set(USE_OPENCV_WORLD 0 CACHE PATH "Whether or not to use opencv_world")
 
 if(USE_OPENCV_WORLD)
     message(opencv_world)
-    find_library(OPENCV_LIBS NAMES opencv_world PATH ${OPENCV_LIB_DIR} )
+    # find_package(OpenCV PATHS ${OPENCV_LIB_DIR} NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH NO_PACKAGE_ROOT_PATH)
+    find_library(OPENCV_WORLD NAMES opencv_world454 PATHS ${OPENCV_LIB_DIR} ${OPENCV_DLL_DIR})
+    find_library(OPENCV_WORLD_DEBUG NAMES opencv_world454d PATHS ${OPENCV_LIB_DIR} ${OPENCV_DLL_DIR})
+    set(OPENCV_LIBS optimized ${OPENCV_WORLD} debug ${OPENCV_WORLD_DEBUG})
 else()
     find_library(CORE_LIB NAMES opencv_core PATHS ${OPENCV_LIB_DIR})
     find_library(IMG_PROC_LIB NAMES opencv_imgproc PATHS ${OPENCV_LIB_DIR})
@@ -73,6 +78,7 @@ target_include_directories(cl_glitcher_bin PUBLIC
         ${CL_GLITCHER_INCLUDE_DIR}
         ${ROOT_INCLUDE_DIR})
 target_include_directories(cl_glitcher_bin SYSTEM PUBLIC
+        BEFORE
         ${OPENCV_INCLUDE_DIR}
         ${OPENCL_INCLUDE_DIR}
         ${CLI11_INCLUDE_DIR})

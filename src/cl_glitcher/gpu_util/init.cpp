@@ -5,7 +5,7 @@
 #include <gpu_util/init.h>
 
 #include <vector>
-#include <exception>
+#include <stdexcept>
 
 namespace clglitch::gpu_util {
 

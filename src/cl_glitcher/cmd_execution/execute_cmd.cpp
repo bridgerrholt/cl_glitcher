@@ -9,6 +9,8 @@
 #include <gpu_util/init.h>
 #include <gpu_util/buffer_wrapper.h>
 
+#include <fstream>
+
 namespace clglitch {
 
 namespace {
@@ -92,7 +94,9 @@ void executeCmd(
   std::string inputImageFilename = tryGetInputImage(cmdEnv);
   auto inputImagePath =
     std::filesystem::path(cmdPath).parent_path() / inputImageFilename;
+  bool exists = std::filesystem::exists(inputImagePath);
   inputImageFilename = inputImagePath.generic_string();
+  std::ifstream fTest{ inputImageFilename };
   cv::Mat imageMat {image_util::loadImage(inputImageFilename)};
   if (imageMat.empty()) {
     throw std::runtime_error(

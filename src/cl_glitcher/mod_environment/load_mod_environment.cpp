@@ -6,6 +6,7 @@
 #include <mod_environment/environment_defaults.h>
 
 #include <load_json_file.h>
+#include <stdexcept>
 
 namespace clglitch {
 

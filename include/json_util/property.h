@@ -147,10 +147,16 @@ makeCustomOptionalProp(T Owner::*member, char const * name, Func Owner::*f)
 
 
 
-#define JSON_UTIL_DECLARE_PROP_LIST(...) \
+/*#define JSON_UTIL_DECLARE_PROP_LIST(...) \
   static constexpr auto jsonProps = std::make_tuple( \
     __VA_ARGS__ \
-  );
+  );*/
+
+#define JSON_UTIL_DECLARE_PROP_LIST(...) \
+  static constexpr auto jsonProps() \
+  { \
+    return std::make_tuple(__VA_ARGS__); \
+  }
 
 
 /// Convenient macro for when the member variable has the same name as the JSON
@@ -158,6 +164,8 @@ makeCustomOptionalProp(T Owner::*member, char const * name, Func Owner::*f)
 #define JSON_UTIL_MAKE_PROP(owner, name) \
   (json_util::makeProp(&owner::name, #name))
 
+#define JSON_UTIL_MAKE_PROP2(ownerAndName, name) \
+  (json_util::makeProp(ownerAndName, #name))
 
 
 #define JSON_UTIL_MAKE_OPTIONAL_PROP(owner, name) \
@@ -591,14 +599,14 @@ void deserialize(
   GenericJson const & json,
   Owner & obj)
 {
-  deserialize<0>(json, obj, obj.jsonProps);
+  deserialize<0>(json, obj, obj.jsonProps());
 }
 template <class GenericJson, class Owner>
 void deserialize2(
   GenericJson const & json,
   Owner & obj)
 {
-  deserialize<0>(json, obj, obj.jsonProps);
+  deserialize<0>(json, obj, obj.jsonProps());
 }
 
 

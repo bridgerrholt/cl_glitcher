@@ -39,7 +39,7 @@ class ModDataLoader
     /// jsonObjExecuteFuncName or (exclusive) stringExecuteFuncName must be defined.
     std::string stringExecuteFuncName;
 
-    static constexpr auto jsonProps = propList(
+    JSON_UTIL_DECLARE_PROP_LIST(
       JSON_UTIL_MAKE_OPTIONAL_PROP(ModDataLoader, libDir),
       JSON_UTIL_MAKE_OPTIONAL_PROP(ModDataLoader, libName),
       JSON_UTIL_MAKE_OPTIONAL_PROP(ModDataLoader, libPath),

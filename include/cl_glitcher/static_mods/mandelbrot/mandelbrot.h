@@ -27,7 +27,7 @@ class MandelbrotData
     LineSeries<float> sphereOffsetZ {0};
     bool imageFeedback {true};
 
-    static constexpr auto jsonProps = std::make_tuple(
+    JSON_UTIL_DECLARE_PROP_LIST(
       JSON_UTIL_MAKE_PROP(MandelbrotData, steps),
       JSON_UTIL_MAKE_PROP(MandelbrotData, n),
       JSON_UTIL_MAKE_PROP(MandelbrotData, radius),

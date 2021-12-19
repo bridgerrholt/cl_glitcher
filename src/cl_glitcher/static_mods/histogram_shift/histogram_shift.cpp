@@ -2,6 +2,8 @@
 // Created by bridg on 2/15/2021.
 //
 
+#define NOMINMAX
+
 #include <string>
 #include <cassert>
 #include <numeric>

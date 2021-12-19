@@ -29,7 +29,7 @@ class ValueTimePair
     Value value;
     float time;
 
-    static constexpr auto jsonProps = std::make_tuple(
+    JSON_UTIL_DECLARE_PROP_LIST(
       JSON_UTIL_MAKE_PROP(ValueTimePair, value),
       JSON_UTIL_MAKE_PROP(ValueTimePair, time)
     );
@@ -146,6 +146,12 @@ class LineSeries
       JSON_UTIL_MAKE_PROP(LineSeries, initial),
       JSON_UTIL_MAKE_CUSTOM_PROP(LineSeries, frames, deserializeFrames)
     );
+
+		LineSeries() = default;
+
+		LineSeries(Value initial, std::vector<ValueTimeType> frames={}) :
+			initial {initial},
+			frames {std::move(frames)} {}
 
     constexpr bool operator==(LineSeries const & other) const
     {

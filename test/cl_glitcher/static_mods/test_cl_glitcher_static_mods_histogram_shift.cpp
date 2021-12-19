@@ -22,8 +22,8 @@ TEST(TestHistogramShift, HistogramShiftDataSingleNumber)
   deserialize(d, o);
 
   HistogramShiftData expected {
-    {{10, 1}},
-    {{20, 1}},
+    {10},
+    {20},
     10.0f
   };
 
@@ -46,8 +46,8 @@ TEST(TestHistogramShift, HistogramShiftDataSingleNumberInArr)
   deserialize(d, o);
 
   HistogramShiftData expected {
-    {{10, 1}},
-    {{20, 1}},
+    {10},
+    {20},
     10.0f
   };
 
@@ -70,8 +70,8 @@ TEST(TestHistogramShift, HistogramShiftDataMultipleNumbers)
   deserialize(d, o);
 
   HistogramShiftData expected {
-    {{10, 1}, {30, 1}, {50, 1}},
-    {{20, 1}, {40, 1}, {60, 1}},
+    {10, {{30, .5}, {50, .5}}},
+    {20, {{40, .5}, {60, .5}}},
     10.0f
   };
 
@@ -94,8 +94,8 @@ TEST(TestHistogramShift, HistogramShiftDataMultipleNumbersWithTimes)
   deserialize(d, o);
 
   HistogramShiftData expected {
-    {{10, 1}, {30, 2}, {50, 3}},
-    {{20, 4}, {40, 5}, {60, 6}},
+    {10, {{30, 2}, {50, 3}}},
+    {20, {{40, 5}, {60, 6}}},
     10.0f
   };
 

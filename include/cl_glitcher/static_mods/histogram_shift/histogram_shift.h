@@ -37,11 +37,21 @@ class HistogramShiftData
     LineSeries<unsigned> incMax;
     LineSeries<float> incFactor;
 
-    static constexpr auto jsonProps = std::make_tuple(
+    JSON_UTIL_DECLARE_PROP_LIST(
       JSON_UTIL_MAKE_PROP(HistogramShiftData, incFactor),
       JSON_UTIL_MAKE_CUSTOM_PROP(HistogramShiftData, incMin, deserializeLine),
       JSON_UTIL_MAKE_CUSTOM_PROP(HistogramShiftData, incMax, deserializeLine)
     );
+
+		HistogramShiftData() = default;
+
+		HistogramShiftData(
+			LineSeries<unsigned> incMin,
+			LineSeries<unsigned> incMax,
+			LineSeries<float> incFactor) :
+			incMin {std::move(incMin)},
+			incMax {std::move(incMax)},
+			incFactor {std::move(incFactor)} {}
 
     bool operator==(HistogramShiftData const & other) const
     {
